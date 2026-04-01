@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VeloPolicy — Micromobility Policy Intelligence</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles/app.css">
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-row">
+        <div class="logo-icon">🚲</div>
+        <div>
+          <div class="logo-title">VeloPolicy</div>
+          <div class="logo-sub">Micromobility Intel</div>
+        </div>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="ns">Overview</div>
+      <div class="ni active" data-page="dashboard"><span class="ic">◈</span>Dashboard</div>
+      <div class="ni" data-page="brief"><span class="ic">📋</span>Weekly Brief<span class="nbadge g">New</span></div>
+      <div class="ns">Live Tracking</div>
+      <div class="ni" data-page="search"><span class="ic">🔍</span>Live Search<span class="nbadge b">Web</span></div>
+      <div class="ni" data-page="legislation"><span class="ic">📜</span>Bill Tracker<span class="nbadge r">24</span></div>
+      <div class="ns">Reports &amp; Integrations</div>
+      <div class="ni" data-page="export"><span class="ic">📄</span>PDF Export</div>
+      <div class="ni" data-page="slack"><span class="ic">💬</span>Slack Automation</div>
+      <div class="ni" data-page="analyze"><span class="ic">🔬</span>AI Analysis</div>
+    </nav>
+    <div class="sf">
+      <div>Week of Mar 31 – Apr 6, 2026</div>
+      <div class="sf-week">Last synced 2h ago<span class="pulse-dot"></span></div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div id="topbar"></div>
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page active">
+      <div class="mrow">
+        <div class="mc"><div class="ml">Active Bills</div><div class="mv">142</div><div class="md up">↑ 11 this week</div></div>
+        <div class="mc"><div class="ml">Enacted YTD</div><div class="mv">18</div><div class="md up">↑ 3 vs last year</div></div>
+        <div class="mc"><div class="ml">Search Monitors</div><div class="mv">7</div><div class="md muted">Active alerts</div></div>
+        <div class="mc"><div class="ml">Slack Pushes</div><div class="mv">12</div><div class="md up">Sent this month</div></div>
+      </div>
+      <div class="g2">
+        <div class="card"><div class="ch"><span class="ct">Bill Status Distribution</span></div><div class="cb"><div class="cw"><canvas id="statusChart"></canvas></div></div></div>
+        <div class="card"><div class="ch"><span class="ct">Legislative Activity — 12 Weeks</span></div><div class="cb"><div class="cw"><canvas id="activityChart"></canvas></div></div></div>
+      </div>
+      <div class="card">
+        <div class="ch"><span class="ct">High-Priority Watchlist</span><button class="btn secondary sm" data-goto="legislation">Full tracker →</button></div>
+        <div class="cb p0" id="watchlist"></div>
+      </div>
+    </div>
+
+    <!-- WEEKLY BRIEF -->
+    <div id="page-brief" class="page">
+      <div class="brief-hero">
+        <div class="bh-date">Week of March 31 – April 6, 2026 · Vol. 12</div>
+        <div class="bh-title">E-Bike Tax Credits, Urban Lane Mandates<br>&amp; EU Safety Harmonization</div>
+        <div class="bh-desc">HB 1822 advances to markup with income caps added. CA SB 403 heads to floor vote April 14. The EU releases consultation draft Directive 2026/14 setting unified speed limits and battery standards.</div>
+        <div class="bh-pills">
+          <span class="bh-pill">🏛 3 federal bills moved</span>
+          <span class="bh-pill">🗺 14 state updates</span>
+          <span class="bh-pill">🌐 EU directive advancing</span>
+        </div>
+      </div>
+      <div class="tg" id="topic-grid"></div>
+      <div class="card">
+        <div class="ch">
+          <span class="ct">Key Developments</span>
+          <div style="display:flex;gap:8px">
+            <button class="btn sm" data-goto="export">📄 Export PDF</button>
+            <button class="btn slack sm" id="brief-slack-btn">💬 Push to Slack</button>
+          </div>
+        </div>
+        <div class="cb p0" id="key-developments"></div>
+      </div>
+    </div>
+
+    <!-- LIVE SEARCH -->
+    <div id="page-search" class="page">
+      <div class="search-panel">
+        <div class="search-row">
+          <input class="search-input" id="search-q" placeholder="Search live web for micromobility legislation... e.g. 'e-bike tax credit 2026 congress'">
+          <button class="btn primary" id="search-btn">🔍 Search Web</button>
+        </div>
+        <div class="label-sm" style="margin-bottom:8px">Quick topics</div>
+        <div id="search-topics" class="search-tags"></div>
+      </div>
+      <div class="card">
+        <div class="ch"><span class="ct" id="search-status-label">Enter a query to search live legislation feeds</span><div id="search-hdr-actions"></div></div>
+        <div id="search-results" class="cb">
+          <div class="empty-state">🌐<br>Live web search powered by Claude.<br>Results surface real bills, agency rulings, and news.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><span class="ct">Saved Search Monitors</span><button class="btn sm" id="add-monitor-btn">+ Add Monitor</button></div>
+        <div class="cb p0" id="monitor-list"></div>
+      </div>
+    </div>
+
+    <!-- BILL TRACKER -->
+    <div id="page-legislation" class="page">
+      <div class="frow" id="leg-filters"></div>
+      <div class="card" style="overflow:auto">
+        <table class="lt">
+          <thead><tr>
+            <th style="width:14px"></th><th>Bill ID</th><th>Title</th><th>Topic</th>
+            <th>Scope</th><th>Jurisdiction</th><th>Status</th><th>Updated</th>
+          </tr></thead>
+          <tbody id="leg-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PDF EXPORT -->
+    <div id="page-export" class="page">
+      <p class="page-intro">Generate a formatted report for the weekly brief, full bill tracker, or a topic brief. Downloads as an HTML file — open in any browser and use Print → Save as PDF.</p>
+      <div class="export-grid" id="export-options"></div>
+      <div class="g2" style="margin-bottom:14px">
+        <div>
+          <div class="label-sm">Include sections</div>
+          <div style="display:flex;flex-direction:column;gap:7px;margin-top:8px" id="export-sections"></div>
+        </div>
+        <div>
+          <div class="label-sm">Options</div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+            <div class="form-group">
+              <label class="form-label">Date range</label>
+              <select class="form-input" id="export-range">
+                <option>This week (Mar 31 – Apr 6)</option>
+                <option>Last 30 days</option>
+                <option>Q1 2026</option>
+                <option>All time</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Priority filter</label>
+              <select class="form-input" id="export-priority">
+                <option>All priorities</option>
+                <option>High priority only</option>
+                <option>High + Medium</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="ch"><span class="ct">Preview</span></div>
+        <div class="cb" style="background:var(--surface)">
+          <div class="preview-page">
+            <div class="preview-header">
+              <div class="preview-logo">🚲 VeloPolicy</div>
+              <div class="preview-week">Weekly Brief · Week of March 31 – April 6, 2026</div>
+            </div>
+            <div class="preview-h1">E-Bike Tax Credits, Lane Mandates &amp; EU Safety Push</div>
+            <div class="preview-p">HB 1822 advances to markup. CA SB 403 heads to floor vote April 14. EU releases draft Directive 2026/14 setting unified speed limits and battery standards.</div>
+            <div class="preview-h1" style="margin-top:12px">High-Priority Bills</div>
+            <table class="preview-table">
+              <tr><th>Bill ID</th><th>Title</th><th>Status</th></tr>
+              <tr><td>HB 1822</td><td>E-Bike Tax Credit Expansion</td><td>Committee</td></tr>
+              <tr><td>CA SB 403</td><td>Protected Lane Mandate</td><td>Floor Vote</td></tr>
+              <tr><td>EU Dir 2026/14</td><td>Safety Standards</td><td>Introduced</td></tr>
+            </table>
+            <div style="margin-top:12px;font-size:9px;color:var(--muted);text-align:center;border-top:1px solid var(--border);padding-top:6px">Generated by VeloPolicy · April 2026</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button class="btn primary" id="generate-pdf-btn" style="font-size:13px;padding:10px 22px">⬇ Generate &amp; Download</button>
+        <button class="btn sm" data-goto="slack">💬 Send via Slack after export</button>
+        <span id="pdf-status" style="font-size:12px;color:var(--muted)"></span>
+      </div>
+    </div>
+
+    <!-- SLACK AUTOMATION -->
+    <div id="page-slack" class="page">
+      <p class="page-intro">Configure automatic weekly brief delivery. Claude generates a fresh brief using live web search, then posts a formatted message to your Slack channel.</p>
+      <div class="g2">
+        <div>
+          <div class="card" style="margin-bottom:12px">
+            <div class="ch"><span class="ct">Connection</span></div>
+            <div class="cb" style="display:flex;flex-direction:column;gap:10px">
+              <div class="form-group"><label class="form-label">Slack Channel</label><input class="form-input" id="slack-channel" value="#micromobility-policy"></div>
+              <div class="form-group"><label class="form-label">Bot Name</label><input class="form-input" id="slack-botname" value="VeloPolicy Bot"></div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:12px">
+            <div class="ch"><span class="ct">Schedule</span></div>
+            <div class="cb">
+              <div class="label-sm" style="margin-bottom:8px">Send day</div>
+              <div class="schedule-row" id="schedule-days"></div>
+              <div class="form-group" style="margin-top:12px">
+                <label class="form-label">Send time</label>
+                <select class="form-input" id="slack-time">
+                  <option>8:00 AM</option><option>9:00 AM</option>
+                  <option>Noon</option><option>5:00 PM</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:14px">
+            <div class="ch"><span class="ct">Message Content</span></div>
+            <div class="cb" style="display:flex;flex-direction:column;gap:7px" id="slack-content-checks"></div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn slack" id="slack-send-now" style="font-size:13px;padding:10px 18px">💬 Send Now (Test)</button>
+            <button class="btn primary" id="slack-save-schedule" style="font-size:13px;padding:10px 18px">✓ Save Schedule</button>
+          </div>
+        </div>
+        <div>
+          <div class="label-sm" style="margin-bottom:8px">Message Preview</div>
+          <div class="slack-preview">
+            <div class="sp-workspace">🏢 YourWorkspace</div>
+            <div class="sp-channel" id="slack-preview-channel">#micromobility-policy</div>
+            <div class="sp-msg">
+              <div class="sp-bot">
+                <div class="sp-avatar">🚲</div>
+                <span class="sp-name" id="slack-preview-botname">VeloPolicy Bot</span>
+                <span class="sp-ts">Today at 8:00 AM</span>
+              </div>
+              <div class="sp-body" id="slack-preview-body">
+                📋 *Weekly Micromobility Policy Brief* — Week of Mar 31–Apr 6, 2026<br><br>
+                HB 1822 advances to markup, CA SB 403 heads to floor vote, EU releases draft Directive 2026/14.
+              </div>
+              <div class="sp-att">
+                <div class="sp-att-title">🔴 High Priority Updates</div>
+                <div class="sp-att-field">HB 1822 — <span class="sp-att-val">E-Bike Tax Credit · In Committee</span></div>
+                <div class="sp-att-field">CA SB 403 — <span class="sp-att-val">Protected Lanes · Floor Vote Apr 14</span></div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:16px">
+            <div class="label-sm" style="margin-bottom:8px">Delivery History</div>
+            <div id="slack-history"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI ANALYSIS -->
+    <div id="page-analyze" class="page">
+      <div class="search-panel">
+        <div class="label-sm" style="margin-bottom:8px">Paste bill text or describe a policy topic</div>
+        <textarea id="bill-text" rows="6" placeholder="Paste bill text, a URL summary, or describe a topic — e.g. 'federal e-bike tax credit implications for low-income riders'..."></textarea>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center" id="analysis-chips"></div>
+      </div>
+      <div class="card" id="result-card" style="display:none">
+        <div class="ch">
+          <span class="ct">AI Analysis</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn sm" id="copy-result-btn">Copy</button>
+            <button class="btn sm" data-goto="export">Export PDF</button>
+          </div>
+        </div>
+        <div class="cb" id="result-area" style="font-size:13px;line-height:1.75;color:var(--text)"></div>
+      </div>
+    </div>
+
+    <div class="statusbar">
+      <span class="sb-dot" id="sb-api"></span><span>Claude API</span>
+      <span class="sb-dot" id="sb-search"></span><span>Web Search</span>
+      <span class="sb-dot" id="sb-slack"></span><span>Slack</span>
+      <span style="margin-left:auto;color:var(--muted)">VeloPolicy v2.0</span>
+    </div>
+  </div>
+</div>
+
+<script src="/js/data.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="/js/charts.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>

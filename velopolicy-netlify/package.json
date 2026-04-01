@@ -1,0 +1,11 @@
+{
+  "name": "velopolicy",
+  "version": "2.0.0",
+  "description": "Micromobility & cycling policy intelligence platform",
+  "private": true,
+  "scripts": {
+    "build": "echo 'No build step'",
+    "test:slack": "node scripts/test-slack.js",
+    "test:claude": "node scripts/test-claude.js"
+  }
+}
