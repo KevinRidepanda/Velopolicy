@@ -7,7 +7,251 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚲</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/styles/app.css">
+<style>
+/* ── Reset & Variables ───────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --green:       #1a4731;
+  --green-mid:   #2d6a4f;
+  --green-light: #52b788;
+  --green-pale:  #d8f3dc;
+  --amber:       #e9a000;
+  --amber-pale:  #fff3cd;
+  --red:         #c0392b;
+  --red-pale:    #fdecea;
+  --blue:        #1565c0;
+  --blue-pale:   #e3f0ff;
+  --purple:      #6d28d9;
+  --purple-pale: #f3e8ff;
+  --border:      #e5e7eb;
+  --surface:     #f9fafb;
+  --text:        #111827;
+  --muted:       #6b7280;
+  --radius:      12px;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #fff;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+  overflow: hidden;
+}
+
+/* ── Layout ──────────────────────────────────────── */
+.shell { display: grid; grid-template-columns: 220px 1fr; height: 100vh; }
+.sidebar { background: var(--green); color: #fff; display: flex; flex-direction: column; overflow-y: auto; }
+.main { overflow-y: auto; height: 100vh; display: flex; flex-direction: column; }
+
+/* ── Sidebar ─────────────────────────────────────── */
+.logo { padding: 18px 16px 14px; border-bottom: 1px solid rgba(255,255,255,.1); }
+.logo-row { display: flex; align-items: center; gap: 10px; }
+.logo-icon { width: 34px; height: 34px; background: var(--green-light); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.logo-title { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #fff; }
+.logo-sub { font-size: 10px; color: rgba(255,255,255,.45); letter-spacing: .5px; text-transform: uppercase; margin-top: 1px; }
+.nav { padding: 12px 0 8px; flex: 1; }
+.ns { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,.35); padding: 10px 16px 3px; font-weight: 500; }
+.ni { display: flex; align-items: center; gap: 8px; padding: 8px 16px; cursor: pointer; font-size: 12.5px; color: rgba(255,255,255,.7); border-left: 3px solid transparent; transition: all .15s; user-select: none; }
+.ni:hover { background: rgba(255,255,255,.08); color: #fff; }
+.ni.active { background: rgba(255,255,255,.12); color: #fff; border-left-color: var(--green-light); }
+.ni .ic { width: 16px; text-align: center; font-size: 14px; opacity: .7; }
+.ni.active .ic { opacity: 1; }
+.nbadge { margin-left: auto; font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 10px; }
+.nbadge.g { background: var(--green-light); color: var(--green); }
+.nbadge.r { background: #e74c3c; color: #fff; }
+.nbadge.b { background: rgba(255,255,255,.2); color: #fff; }
+.sf { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,.1); font-size: 10px; color: rgba(255,255,255,.3); }
+.sf-week { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 2px; }
+.pulse-dot::after { content: ''; display: inline-block; width: 5px; height: 5px; background: var(--green-light); border-radius: 50%; animation: pulse 1.5s ease-in-out infinite; vertical-align: middle; margin-left: 4px; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+/* ── Topbar ──────────────────────────────────────── */
+.topbar { background: #fff; border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; position: sticky; top: 0; z-index: 20; }
+.tb-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: var(--green); }
+.tb-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.tb-actions { display: flex; gap: 8px; align-items: center; }
+
+/* ── Buttons ─────────────────────────────────────── */
+.btn { padding: 7px 14px; border-radius: 8px; font-size: 12.5px; font-family: 'DM Sans', sans-serif; font-weight: 500; cursor: pointer; transition: all .15s; border: 1px solid var(--border); background: #fff; color: var(--text); }
+.btn:hover { background: var(--surface); }
+.btn.primary { background: var(--green); color: #fff; border-color: var(--green); }
+.btn.primary:hover { background: var(--green-mid); }
+.btn.secondary { background: var(--blue-pale); color: var(--blue); border-color: #b3d1f7; }
+.btn.secondary:hover { background: #d0e8ff; }
+.btn.slack { background: #4a154b; color: #fff; border-color: #4a154b; }
+.btn.slack:hover { background: #611f69; }
+.btn.sm { font-size: 11.5px; padding: 4px 10px; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── Pages ───────────────────────────────────────── */
+.page { display: none; padding: 22px 24px; animation: fi .2s; }
+.page.active { display: block; }
+@keyframes fi { from{opacity:0;transform:translateY(3px)} to{opacity:1;transform:none} }
+.page-intro { color: var(--muted); font-size: 13px; margin-bottom: 16px; line-height: 1.7; }
+
+/* ── Cards ───────────────────────────────────────── */
+.card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
+.ch { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.ct { font-size: 13px; font-weight: 600; color: var(--text); }
+.cb { padding: 14px 16px; }
+.cb.p0 { padding: 0; }
+
+/* ── Metrics ─────────────────────────────────────── */
+.mrow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+.mc { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+.ml { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
+.mv { font-size: 22px; font-weight: 600; color: var(--text); }
+.md { font-size: 11px; margin-top: 3px; }
+.up { color: #16a34a; }
+.muted { color: var(--muted); }
+
+/* ── Status badges ───────────────────────────────── */
+.sb { display: inline-block; font-size: 10.5px; padding: 2px 8px; border-radius: 20px; font-weight: 500; white-space: nowrap; }
+.s-intro     { background: #e0f2fe; color: #0369a1; }
+.s-committee { background: var(--amber-pale); color: #92400e; }
+.s-floor     { background: var(--purple-pale); color: var(--purple); }
+.s-passed    { background: #dcfce7; color: #166534; }
+.s-enacted   { background: var(--green-pale); color: var(--green); }
+.s-failed    { background: var(--red-pale); color: var(--red); }
+
+/* ── Priority dots ───────────────────────────────── */
+.pd { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.ph { background: #e74c3c; }
+.pm { background: var(--amber); }
+.pl { background: #94a3b8; }
+
+/* ── Filter row ──────────────────────────────────── */
+.frow { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+.fb { padding: 4px 12px; border-radius: 20px; font-size: 11.5px; border: 1px solid var(--border); background: #fff; cursor: pointer; color: var(--muted); font-family: 'DM Sans', sans-serif; transition: all .15s; }
+.fb:hover, .fb.active { background: var(--green); color: #fff; border-color: var(--green); }
+
+/* ── Legislation table ───────────────────────────── */
+.lt { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.lt th { text-align: left; padding: 9px 10px; font-size: 10px; letter-spacing: .5px; text-transform: uppercase; color: var(--muted); border-bottom: 2px solid var(--border); font-weight: 500; white-space: nowrap; }
+.lt td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.lt tr:hover td { background: var(--surface); cursor: pointer; }
+.lid { font-family: monospace; font-size: 11px; color: var(--green-mid); font-weight: 500; }
+.ltitle { font-weight: 500; color: var(--text); line-height: 1.4; }
+.stag { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 4px; background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+.scope-pill { font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 500; }
+.sp-federal { background: var(--blue-pale);   color: var(--blue); }
+.sp-state   { background: var(--green-pale);  color: var(--green); }
+.sp-local   { background: var(--amber-pale);  color: #92400e; }
+.sp-intl    { background: var(--purple-pale); color: var(--purple); }
+
+/* ── Search ──────────────────────────────────────── */
+.search-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 16px; }
+.search-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.search-input { flex: 1; border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text); background: #fff; }
+.search-input:focus { outline: none; border-color: var(--green-light); box-shadow: 0 0 0 3px rgba(82,183,136,.12); }
+.search-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.stopic { padding: 4px 11px; border-radius: 20px; font-size: 11px; border: 1px solid var(--border); cursor: pointer; background: #fff; color: var(--muted); transition: all .15s; }
+.stopic.on { background: var(--green); color: #fff; border-color: var(--green); }
+.result-item { border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; transition: all .15s; }
+.result-item:hover { border-color: var(--green-light); box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+.ri-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+.ri-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; line-height: 1.4; }
+.ri-snippet { font-size: 12px; color: var(--muted); line-height: 1.6; }
+.ri-source { font-size: 10.5px; color: var(--green-mid); }
+
+/* ── Loading / Empty ─────────────────────────────── */
+.spin { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.loading-row { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; padding: 24px; justify-content: center; }
+.empty-state { text-align: center; padding: 32px; color: var(--muted); font-size: 13px; line-height: 1.8; }
+
+/* ── Weekly brief hero ───────────────────────────── */
+.brief-hero { background: linear-gradient(135deg, var(--green) 0%, #0d3321 100%); border-radius: var(--radius); padding: 24px; color: #fff; margin-bottom: 18px; }
+.bh-date  { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,.5); margin-bottom: 5px; }
+.bh-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: #fff; line-height: 1.3; margin-bottom: 6px; }
+.bh-desc  { font-size: 12.5px; color: rgba(255,255,255,.75); line-height: 1.7; max-width: 500px; }
+.bh-pills { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+.bh-pill  { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18); color: #fff; font-size: 10.5px; padding: 3px 10px; border-radius: 20px; }
+
+/* ── Topic grid ──────────────────────────────────── */
+.tg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px; }
+.tc { border: 1px solid var(--border); border-radius: 10px; padding: 14px; cursor: pointer; transition: all .15s; }
+.tc:hover { border-color: var(--green-light); box-shadow: 0 0 0 3px rgba(82,183,136,.08); }
+.tc-icon  { font-size: 20px; margin-bottom: 8px; }
+.tc-title { font-size: 12.5px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.tc-desc  { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+.tc-n     { font-size: 11px; color: var(--green-mid); font-weight: 500; margin-top: 6px; }
+
+/* ── Export ──────────────────────────────────────── */
+.export-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.export-option { border: 1px solid var(--border); border-radius: 10px; padding: 16px; cursor: pointer; transition: all .15s; }
+.export-option:hover, .export-option.selected { border-color: var(--green-light); background: rgba(82,183,136,.05); }
+.export-option.selected { border-width: 2px; border-color: var(--green); }
+.eo-icon  { font-size: 24px; margin-bottom: 8px; }
+.eo-title { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+.eo-desc  { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.preview-page   { background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 20px; max-width: 400px; margin: 0 auto; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+.preview-header { border-bottom: 3px solid var(--green); padding-bottom: 10px; margin-bottom: 14px; }
+.preview-logo   { font-family: 'Playfair Display', serif; font-size: 16px; color: var(--green); font-weight: 700; }
+.preview-week   { font-size: 10px; color: var(--muted); }
+.preview-h1     { font-family: 'Playfair Display', serif; font-size: 14px; color: var(--text); font-weight: 700; margin: 10px 0 4px; }
+.preview-p      { font-size: 11px; color: var(--muted); line-height: 1.5; }
+.preview-table  { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.preview-table th { font-size: 9px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); padding: 4px 6px; border-bottom: 1px solid var(--border); text-align: left; }
+.preview-table td { font-size: 10px; padding: 4px 6px; border-bottom: 1px solid var(--border); }
+
+/* ── Slack ───────────────────────────────────────── */
+.schedule-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.sch-opt { padding: 5px 13px; border-radius: 20px; font-size: 12px; border: 1px solid var(--border); cursor: pointer; background: #fff; color: var(--muted); font-family: 'DM Sans', sans-serif; transition: all .15s; }
+.sch-opt.on { background: var(--green); color: #fff; border-color: var(--green); }
+.slack-preview  { background: #3b0764; border-radius: 10px; padding: 16px; color: #fff; }
+.sp-workspace   { font-size: 11px; color: rgba(255,255,255,.5); margin-bottom: 4px; }
+.sp-channel     { font-size: 13px; font-weight: 500; color: rgba(255,255,255,.85); margin-bottom: 10px; }
+.sp-msg         { background: rgba(255,255,255,.07); border-radius: 8px; padding: 12px; }
+.sp-bot         { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.sp-avatar      { width: 28px; height: 28px; background: var(--green-light); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.sp-name        { font-size: 13px; font-weight: 600; color: #fff; }
+.sp-ts          { font-size: 10px; color: rgba(255,255,255,.35); margin-left: 4px; }
+.sp-body        { font-size: 12px; color: rgba(255,255,255,.8); line-height: 1.6; }
+.sp-att         { background: rgba(255,255,255,.06); border-left: 4px solid var(--green-light); border-radius: 4px; padding: 10px 12px; margin-top: 8px; }
+.sp-att-title   { font-size: 12px; font-weight: 600; color: var(--green-light); margin-bottom: 4px; }
+.sp-att-field   { font-size: 11px; color: rgba(255,255,255,.65); margin-top: 3px; }
+.sp-att-val     { color: rgba(255,255,255,.9); font-weight: 500; }
+.hist-item      { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+.hist-icon      { font-size: 15px; width: 20px; text-align: center; }
+.hist-detail    { flex: 1; }
+.hist-time      { font-size: 11px; color: var(--muted); }
+.hist-status    { font-size: 11px; padding: 2px 8px; border-radius: 20px; }
+.hs-ok   { background: var(--green-pale); color: var(--green); }
+.hs-fail { background: var(--red-pale);   color: var(--red); }
+
+/* ── Forms ───────────────────────────────────────── */
+.form-group  { display: flex; flex-direction: column; gap: 4px; }
+.form-label  { font-size: 10px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+.form-input  { border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text); background: #fff; }
+.form-input:focus { outline: none; border-color: var(--green-light); box-shadow: 0 0 0 3px rgba(82,183,136,.12); }
+textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text); background: #fff; line-height: 1.6; resize: vertical; }
+textarea:focus { outline: none; border-color: var(--green-light); box-shadow: 0 0 0 3px rgba(82,183,136,.12); }
+.label-sm { font-size: 10px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+
+/* ── Status bar ──────────────────────────────────── */
+.statusbar { flex-shrink: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 6px 24px; display: flex; align-items: center; gap: 12px; font-size: 11px; color: var(--muted); margin-top: auto; }
+.sb-dot      { width: 6px; height: 6px; border-radius: 50%; background: #94a3b8; }
+.sb-dot.ok   { background: #16a34a; }
+.sb-dot.busy { background: var(--amber); animation: pulse 1s ease-in-out infinite; }
+
+/* ── Toast ───────────────────────────────────────── */
+.toast { position: fixed; bottom: 20px; right: 20px; background: var(--text); color: #fff; padding: 10px 18px; border-radius: 10px; font-size: 13px; z-index: 999; animation: slideUp .3s; display: flex; align-items: center; gap: 8px; max-width: 340px; }
+@keyframes slideUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
+
+/* ── Utility ─────────────────────────────────────── */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.cw { position: relative; width: 100%; height: 190px; }
+
+/* ── Scrollbar ───────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(26,71,49,.12); border-radius: 4px; }
+.sidebar ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); }
+
+</style>
 </head>
 <body>
 
@@ -30,15 +274,15 @@
       <div class="ni" data-page="brief" onclick="nav('brief')"><span class="ic">📋</span>Weekly Brief<span class="nbadge g">New</span></div>
       <div class="ns">Live Tracking</div>
       <div class="ni" data-page="search" onclick="nav('search')"><span class="ic">🔍</span>Live Search<span class="nbadge b">Web</span></div>
-      <div class="ni" data-page="legislation" onclick="nav('legislation')"><span class="ic">📜</span>Bill Tracker<span class="nbadge r">24</span></div>
+      <div class="ni" data-page="legislation" onclick="nav('legislation')"><span class="ic">📜</span>Bill Tracker<span class="nbadge r">0</span></div>
       <div class="ns">Reports &amp; Integrations</div>
       <div class="ni" data-page="export" onclick="nav('export')"><span class="ic">📄</span>PDF Export</div>
       <div class="ni" data-page="slack" onclick="nav('slack')"><span class="ic">💬</span>Slack Automation</div>
       <div class="ni" data-page="analyze" onclick="nav('analyze')"><span class="ic">🔬</span>AI Analysis</div>
     </nav>
     <div class="sf">
-      <div>Week of Mar 31 – Apr 6, 2026</div>
-      <div class="sf-week">Last synced 2h ago<span class="pulse-dot"></span></div>
+      <div>VeloPolicy v2.0</div>
+      <div class="sf-week">Bills tracked from live search<span class="pulse-dot"></span></div>
     </div>
   </aside>
 
@@ -59,83 +303,44 @@
           <div class="cb" style="text-align:center;padding:48px 24px">
             <div style="font-size:48px;margin-bottom:16px">🔍</div>
             <div style="font-size:18px;font-weight:600;color:var(--text);margin-bottom:8px">No bills tracked yet</div>
-            <div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.7;max-width:380px;margin-left:auto;margin-right:auto">Use <strong>Live Search</strong> to find real legislation, then click <strong>+ Track Bill</strong> to add it to your dashboard.</div>
-            <button class="btn primary" data-goto="search" style="font-size:13px;padding:10px 24px" onclick="nav('search')">🔍 Search for Legislation</button>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.7;max-width:380px;margin-left:auto;margin-right:auto">Use <strong>Live Search</strong> to find real legislation, then click <strong>+ Track Bill</strong> to add it here.</div>
+            <button class="btn primary" onclick="nav('search')" style="font-size:13px;padding:10px 24px">🔍 Search for Legislation</button>
           </div>
         </div>
       </div>
       <div id="dashboard-content" style="display:none">
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:16px">
-        <div class="card">
-          <div class="ch">
-            <span class="ct">Bill Status</span>
-            <span style="font-size:11px;color:var(--muted)">Click a slice to filter</span>
-          </div>
-          <div class="cb">
-            <div class="cw" style="height:180px"><canvas id="statusChart"></canvas></div>
-            <div id="status-legend" style="margin-top:10px;line-height:1.8"></div>
-          </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:16px">
+          <div class="card"><div class="ch"><span class="ct">Bill Status</span><span style="font-size:11px;color:var(--muted)">Click to filter</span></div><div class="cb"><div class="cw" style="height:180px"><canvas id="statusChart"></canvas></div><div id="status-legend" style="margin-top:10px;line-height:1.8"></div></div></div>
+          <div class="card"><div class="ch"><span class="ct">Bills by Topic</span><span style="font-size:11px;color:var(--muted)">Click to filter</span></div><div class="cb"><div class="cw" style="height:180px"><canvas id="topicChart"></canvas></div></div></div>
+          <div class="card"><div class="ch"><span class="ct">Bills by Scope</span><span style="font-size:11px;color:var(--muted)">Click to filter</span></div><div class="cb"><div class="cw" style="height:180px"><canvas id="activityChart"></canvas></div><div id="scope-legend" style="margin-top:10px;line-height:1.8"></div></div></div>
+          <div class="card"><div class="ch"><span class="ct">Priority Breakdown</span><span style="font-size:11px;color:var(--muted)">Click to filter</span></div><div class="cb"><div class="cw" style="height:180px"><canvas id="priorityChart"></canvas></div><div id="priority-legend" style="margin-top:10px;line-height:1.8"></div></div></div>
         </div>
         <div class="card">
-          <div class="ch">
-            <span class="ct">Bills by Topic</span>
-            <span style="font-size:11px;color:var(--muted)">Click a bar to filter</span>
-          </div>
-          <div class="cb">
-            <div class="cw" style="height:180px"><canvas id="topicChart"></canvas></div>
-          </div>
+          <div class="ch"><span class="ct">High-Priority Watchlist</span><button class="btn secondary sm" onclick="nav('legislation')">Full tracker →</button></div>
+          <div class="cb p0" id="watchlist"></div>
         </div>
         <div class="card">
-          <div class="ch">
-            <span class="ct">Bills by Scope</span>
-            <span style="font-size:11px;color:var(--muted)">Click a bar to filter</span>
-          </div>
-          <div class="cb">
-            <div class="cw" style="height:180px"><canvas id="activityChart"></canvas></div>
-            <div id="scope-legend" style="margin-top:10px;line-height:1.8"></div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="ch">
-            <span class="ct">Priority Breakdown</span>
-            <span style="font-size:11px;color:var(--muted)">Click to filter</span>
-          </div>
-          <div class="cb">
-            <div class="cw" style="height:180px"><canvas id="priorityChart"></canvas></div>
-            <div id="priority-legend" style="margin-top:10px;line-height:1.8"></div>
-          </div>
+          <div class="ch"><span class="ct">Manage Tracked Bills</span><button class="btn sm" onclick="nav('search')">+ Find More Bills</button></div>
+          <div class="cb p0" id="manage-bills-list"></div>
         </div>
       </div>
-      <div class="card">
-        <div class="ch"><span class="ct">High-Priority Watchlist</span><button class="btn secondary sm" data-goto="legislation" onclick="nav('legislation')">Full tracker →</button></div>
-        <div class="cb p0" id="watchlist"></div>
-      </div>
-      <div class="card">
-        <div class="ch"><span class="ct">Manage Tracked Bills</span><button class="btn sm" data-goto="search" onclick="nav('search')">+ Find More Bills</button></div>
-        <div class="cb p0" id="manage-bills-list"></div>
-      </div>
-      </div><!-- /dashboard-content -->
     </div>
 
     <!-- WEEKLY BRIEF -->
     <div id="page-brief" class="page">
       <div class="brief-hero">
-        <div class="bh-date">Week of March 31 – April 6, 2026 · Vol. 12</div>
-        <div class="bh-title">E-Bike Tax Credits, Urban Lane Mandates<br>&amp; EU Safety Harmonization</div>
-        <div class="bh-desc">HB 1822 advances to markup with income caps added. CA SB 403 heads to floor vote April 14. The EU releases consultation draft Directive 2026/14 setting unified speed limits and battery standards.</div>
-        <div class="bh-pills">
-          <span class="bh-pill">🏛 3 federal bills moved</span>
-          <span class="bh-pill">🗺 14 state updates</span>
-          <span class="bh-pill">🌐 EU directive advancing</span>
-        </div>
+        <div class="bh-date" id="brief-date">Your weekly micromobility policy digest</div>
+        <div class="bh-title" id="brief-title">Track bills to generate your brief</div>
+        <div class="bh-desc" id="brief-desc">Use Live Search to find and track real legislation. Your weekly brief will reflect your tracked bills and update automatically.</div>
+        <div class="bh-pills" id="brief-pills"></div>
       </div>
       <div class="tg" id="topic-grid"></div>
       <div class="card">
         <div class="ch">
-          <span class="ct">Key Developments</span>
+          <span class="ct">Recent Developments</span>
           <div style="display:flex;gap:8px">
-            <button class="btn sm" data-goto="export" onclick="nav('export')">📄 Export PDF</button>
-            <button class="btn slack sm" id="brief-slack-btn">💬 Push to Slack</button>
+            <button class="btn sm" onclick="nav('export')">📄 Export PDF</button>
+            <button class="btn slack sm" id="brief-slack-btn" onclick="nav('slack')">💬 Push to Slack</button>
           </div>
         </div>
         <div class="cb p0" id="key-developments"></div>
@@ -146,7 +351,7 @@
     <div id="page-search" class="page">
       <div class="search-panel">
         <div class="search-row">
-          <input class="search-input" id="search-q" placeholder="Search live web for micromobility legislation... e.g. 'e-bike tax credit 2026 congress'">
+          <input class="search-input" id="search-q" placeholder="Search live web for micromobility legislation... e.g. 'e-bike tax credit 2026 congress'" onkeydown="if(event.key==='Enter')doSearch()">
           <button class="btn primary" id="search-btn" onclick="doSearch()">🔍 Search Web</button>
         </div>
         <div class="label-sm" style="margin-bottom:8px">Quick topics</div>
@@ -155,7 +360,7 @@
       <div class="card">
         <div class="ch"><span class="ct" id="search-status-label">Enter a query to search live legislation feeds</span><div id="search-hdr-actions"></div></div>
         <div id="search-results" class="cb">
-          <div class="empty-state">🌐<br>Live web search powered by Claude.<br>Type a query above or click a quick topic to find real bills, agency rulings, and news.</div>
+          <div class="empty-state">🌐<br>Live web search powered by Claude.<br>Type a query or click a quick topic above.</div>
         </div>
       </div>
       <div class="card">
@@ -181,21 +386,15 @@
     <!-- PDF EXPORT -->
     <div id="page-export" class="page">
       <p class="page-intro">Choose a report format, select topics and sections, then generate. Downloads as HTML — open in browser and use File → Print → Save as PDF.</p>
-
       <div class="export-grid" id="export-options"></div>
-
-      <!-- Topic filter row (shown for Topic Brief mode) -->
       <div id="topic-filter-row" style="display:none;margin-bottom:16px">
         <div class="label-sm" style="margin-bottom:8px">Select topic</div>
         <div id="topic-filter-chips" style="display:flex;gap:6px;flex-wrap:wrap"></div>
       </div>
-
-      <!-- Bill selection (shown for Custom mode) -->
       <div id="bill-filter-row" style="display:none;margin-bottom:16px">
         <div class="label-sm" style="margin-bottom:8px">Select bills to include</div>
         <div id="bill-filter-list" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:10px"></div>
       </div>
-
       <div class="g2" style="margin-bottom:14px">
         <div>
           <div class="label-sm">Include sections</div>
@@ -204,16 +403,14 @@
         <div>
           <div class="label-sm">Options</div>
           <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
-            <div class="form-group">
-              <label class="form-label">Priority filter</label>
+            <div class="form-group"><label class="form-label">Priority filter</label>
               <select class="form-input" id="export-priority">
                 <option value="all">All priorities</option>
                 <option value="high">High priority only</option>
                 <option value="highmed">High + Medium</option>
               </select>
             </div>
-            <div class="form-group">
-              <label class="form-label">Sort bills by</label>
+            <div class="form-group"><label class="form-label">Sort by</label>
               <select class="form-input" id="export-sort">
                 <option value="priority">Priority</option>
                 <option value="status">Status</option>
@@ -224,12 +421,8 @@
           </div>
         </div>
       </div>
-
       <div class="card" style="margin-bottom:14px">
-        <div class="ch">
-          <span class="ct">Preview</span>
-          <span id="preview-bill-count" style="font-size:12px;color:var(--muted)">0 bills selected</span>
-        </div>
+        <div class="ch"><span class="ct">Preview</span><span id="preview-bill-count" style="font-size:12px;color:var(--muted)">0 bills selected</span></div>
         <div class="cb" style="background:var(--surface)">
           <div class="preview-page">
             <div class="preview-header">
@@ -243,10 +436,9 @@
           </div>
         </div>
       </div>
-
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        <button class="btn primary" id="generate-pdf-btn" style="font-size:13px;padding:10px 22px" onclick="generatePDF()">⬇ Generate &amp; Download</button>
-        <button class="btn sm" data-goto="slack" onclick="nav('slack')">💬 Send via Slack after export</button>
+        <button class="btn primary" id="generate-pdf-btn" onclick="generatePDF()" style="font-size:13px;padding:10px 22px">⬇ Generate &amp; Download</button>
+        <button class="btn sm" onclick="nav('slack')">💬 Send via Slack after export</button>
         <span id="pdf-status" style="font-size:12px;color:var(--muted)"></span>
       </div>
     </div>
@@ -259,8 +451,8 @@
           <div class="card" style="margin-bottom:12px">
             <div class="ch"><span class="ct">Connection</span></div>
             <div class="cb" style="display:flex;flex-direction:column;gap:10px">
-              <div class="form-group"><label class="form-label">Slack Channel</label><input class="form-input" id="slack-channel" value="#micromobility-policy"></div>
-              <div class="form-group"><label class="form-label">Bot Name</label><input class="form-input" id="slack-botname" value="VeloPolicy Bot"></div>
+              <div class="form-group"><label class="form-label">Slack Channel</label><input class="form-input" id="slack-channel" value="#micromobility-policy" oninput="document.getElementById('slack-preview-channel').textContent=this.value||'#channel'"></div>
+              <div class="form-group"><label class="form-label">Bot Name</label><input class="form-input" id="slack-botname" value="VeloPolicy Bot" oninput="document.getElementById('slack-preview-botname').textContent=this.value||'Bot'"></div>
             </div>
           </div>
           <div class="card" style="margin-bottom:12px">
@@ -268,12 +460,8 @@
             <div class="cb">
               <div class="label-sm" style="margin-bottom:8px">Send day</div>
               <div class="schedule-row" id="schedule-days"></div>
-              <div class="form-group" style="margin-top:12px">
-                <label class="form-label">Send time</label>
-                <select class="form-input" id="slack-time">
-                  <option>8:00 AM</option><option>9:00 AM</option>
-                  <option>Noon</option><option>5:00 PM</option>
-                </select>
+              <div class="form-group" style="margin-top:12px"><label class="form-label">Send time</label>
+                <select class="form-input" id="slack-time"><option>8:00 AM</option><option>9:00 AM</option><option>Noon</option><option>5:00 PM</option></select>
               </div>
             </div>
           </div>
@@ -282,8 +470,8 @@
             <div class="cb" style="display:flex;flex-direction:column;gap:7px" id="slack-content-checks"></div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn slack" id="slack-send-now" style="font-size:13px;padding:10px 18px" onclick="sendSlackNow()">💬 Send Now (Test)</button>
-            <button class="btn primary" id="slack-save-schedule" style="font-size:13px;padding:10px 18px" onclick="saveSchedule()">✓ Save Schedule</button>
+            <button class="btn slack" id="slack-send-now" onclick="sendSlackNow()" style="font-size:13px;padding:10px 18px">💬 Send Now (Test)</button>
+            <button class="btn primary" id="slack-save-schedule" onclick="saveSchedule()" style="font-size:13px;padding:10px 18px">✓ Save Schedule</button>
           </div>
         </div>
         <div>
@@ -297,15 +485,7 @@
                 <span class="sp-name" id="slack-preview-botname">VeloPolicy Bot</span>
                 <span class="sp-ts">Today at 8:00 AM</span>
               </div>
-              <div class="sp-body" id="slack-preview-body">
-                📋 *Weekly Micromobility Policy Brief* — Week of Mar 31–Apr 6, 2026<br><br>
-                HB 1822 advances to markup, CA SB 403 heads to floor vote, EU releases draft Directive 2026/14.
-              </div>
-              <div class="sp-att">
-                <div class="sp-att-title">🔴 High Priority Updates</div>
-                <div class="sp-att-field">HB 1822 — <span class="sp-att-val">E-Bike Tax Credit · In Committee</span></div>
-                <div class="sp-att-field">CA SB 403 — <span class="sp-att-val">Protected Lanes · Floor Vote Apr 14</span></div>
-              </div>
+              <div class="sp-body" id="slack-preview-body">Click "Send Now" to generate a live AI brief and preview it here.</div>
             </div>
           </div>
           <div style="margin-top:16px">
@@ -327,8 +507,8 @@
         <div class="ch">
           <span class="ct">AI Analysis</span>
           <div style="display:flex;gap:6px">
-            <button class="btn sm" id="copy-result-btn">Copy</button>
-            <button class="btn sm" data-goto="export" onclick="nav('export')">Export PDF</button>
+            <button class="btn sm" id="copy-result-btn" onclick="navigator.clipboard&&navigator.clipboard.writeText(document.getElementById('result-area').innerText).then(function(){toast('Copied!','ok')})">Copy</button>
+            <button class="btn sm" onclick="nav('export')">Export PDF</button>
           </div>
         </div>
         <div class="cb" id="result-area" style="font-size:13px;line-height:1.75;color:var(--text)"></div>
@@ -389,7 +569,1670 @@ var PAGE_META={
 };
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<script src="/js/charts.js"></script>
-<script src="/js/app.js"></script>
+<script>
+// public/js/charts.js
+// Chart.js initializations — all charts are driven by live tracked bill data.
+// Charts rebuild whenever bills are added, removed, or updated.
+// Exports: initCharts(), rebuildCharts(), refreshCharts()
+
+// ── Color palette ─────────────────────────────────────────────
+var C = {
+  green:     '#1a4731',
+  greenMid:  '#2d6a4f',
+  greenL:    '#52b788',
+  greenPale: '#d8f3dc',
+  amber:     '#e9a000',
+  amberPale: '#fff3cd',
+  blue:      '#1565c0',
+  bluePale:  '#e3f0ff',
+  red:       '#e74c3c',
+  redPale:   '#fdecea',
+  purple:    '#6d28d9',
+  gray:      '#94a3b8',
+  grayPale:  '#f1f5f9',
+  border:    '#e5e7eb',
+};
+
+// Track chart instances so we can destroy and rebuild cleanly
+var chartInstances = {};
+
+function destroyChart(key) {
+  if (chartInstances[key]) {
+    chartInstances[key].destroy();
+    delete chartInstances[key];
+  }
+}
+
+// ── Data helpers — read from live BILLS array ─────────────────
+
+function getStatusCounts() {
+  const counts = { intro:0, committee:0, floor:0, passed:0, enacted:0, failed:0 };
+  (window.BILLS || []).forEach(b => { if (counts[b.s] !== undefined) counts[b.s]++; });
+  return counts;
+}
+
+function getTopicCounts() {
+  const counts = {};
+  (window.BILLS || []).forEach(b => {
+    counts[b.topic] = (counts[b.topic] || 0) + 1;
+  });
+  return counts;
+}
+
+function getScopeCounts() {
+  const counts = { federal:0, state:0, local:0, intl:0 };
+  (window.BILLS || []).forEach(b => { if (counts[b.scope] !== undefined) counts[b.scope]++; });
+  return counts;
+}
+
+function getPriorityCounts() {
+  const counts = { high:0, med:0, low:0 };
+  (window.BILLS || []).forEach(b => { if (counts[b.p] !== undefined) counts[b.p]++; });
+  return counts;
+}
+
+// ── Placeholder chart for empty state ─────────────────────────
+
+function emptyChart(ctx, type, labels) {
+  const data = labels.map(() => type === 'doughnut' ? 0 : 0);
+  // Show a single grey segment for doughnut, or flat bars
+  return new Chart(ctx, {
+    type,
+    data: {
+      labels: type === 'doughnut' ? ['Add bills via Live Search'] : labels,
+      datasets: [{
+        data: type === 'doughnut' ? [1] : labels.map(() => 0),
+        backgroundColor: type === 'doughnut' ? [C.border] : C.border,
+        borderWidth: 0,
+        borderRadius: type !== 'doughnut' ? 6 : 0,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: () => 'Track bills via Live Search' } },
+      },
+      cutout: type === 'doughnut' ? '62%' : undefined,
+      scales: type !== 'doughnut' ? {
+        x: { grid:{ display:false }, ticks:{ font:{ size:11 } } },
+        y: { grid:{ color:C.grayPale }, ticks:{ font:{ size:11 }, stepSize:1 }, min:0, max:5 },
+      } : undefined,
+    },
+  });
+}
+
+// ── Chart 1: Status doughnut ──────────────────────────────────
+function buildStatusChart() {
+  destroyChart('status');
+  const ctx = document.getElementById('statusChart');
+  if (!ctx) return;
+
+  const counts = getStatusCounts();
+  const total  = Object.values(counts).reduce((a,b) => a+b, 0);
+
+  if (total === 0) {
+    chartInstances['status'] = emptyChart(ctx, 'doughnut', []);
+    return;
+  }
+
+  const allLabels = ['Introduced','In Committee','Floor Vote','Passed','Enacted','Failed'];
+  const allValues = [counts.intro, counts.committee, counts.floor, counts.passed, counts.enacted, counts.failed];
+  const allColors = [C.blue, C.amber, C.purple, C.greenMid, C.greenL, C.red];
+  const allKeys   = ['intro','committee','floor','passed','enacted','failed'];
+
+  // Only show slices with at least 1 bill
+  const active = allLabels
+    .map((l,i) => ({ label:l, value:allValues[i], color:allColors[i], key:allKeys[i] }))
+    .filter(x => x.value > 0);
+
+  chartInstances['status'] = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: active.map(x => x.label),
+      datasets: [{
+        data:            active.map(x => x.value),
+        backgroundColor: active.map(x => x.color),
+        borderWidth: 2,
+        borderColor: '#fff',
+        hoverOffset: 6,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.label}: ${ctx.parsed} bill${ctx.parsed !== 1 ? 's' : ''} (${Math.round(ctx.parsed / total * 100)}%)`,
+          },
+        },
+      },
+      cutout: '62%',
+      onClick: (e, elements) => {
+        if (!elements.length) return;
+        const key = active[elements[0].index]?.key;
+        if (!key) return;
+        nav('legislation');
+        setTimeout(() => {
+          const btn = document.querySelector(`[data-filter="${key}"]`);
+          if (btn) btn.click();
+        }, 200);
+      },
+    },
+    plugins: [{
+      // Draw total count in the center hole
+      id: 'centerText',
+      afterDraw(chart) {
+        const { ctx: c, chartArea: { width, height, left, top } } = chart;
+        const cx = left + width / 2;
+        const cy = top  + height / 2;
+        c.save();
+        c.textAlign = 'center';
+        c.textBaseline = 'middle';
+        c.font = `600 ${Math.min(22, width * 0.18)}px DM Sans, sans-serif`;
+        c.fillStyle = C.green;
+        c.fillText(total, cx, cy - 8);
+        c.font = `400 11px DM Sans, sans-serif`;
+        c.fillStyle = C.gray;
+        c.fillText('bills', cx, cy + 10);
+        c.restore();
+      },
+    }],
+  });
+}
+
+// ── Chart 2: Topic horizontal bar ────────────────────────────
+function buildTopicChart() {
+  destroyChart('topic');
+  const ctx = document.getElementById('topicChart');
+  if (!ctx) return;
+
+  const counts = getTopicCounts();
+
+  if (Object.keys(counts).length === 0) {
+    chartInstances['topic'] = emptyChart(ctx, 'bar',
+      ['E-Bike Incentives','Infrastructure','Safety','Parking','Data','International']);
+    return;
+  }
+
+  const topicColors = {
+    'E-Bike Incentives':  C.green,
+    'Infrastructure':     C.greenMid,
+    'Safety & Liability': C.amber,
+    'Parking & Zoning':   C.blue,
+    'Data & Privacy':     C.purple,
+    'International':      C.greenL,
+  };
+
+  // Sort by count descending
+  const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
+  const labels = sorted.map(x => x[0]);
+  const values = sorted.map(x => x[1]);
+  const colors = labels.map(l => topicColors[l] || C.gray);
+
+  chartInstances['topic'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors,
+        borderRadius: 6,
+        borderSkipped: false,
+        hoverBackgroundColor: colors.map(c => c + 'bb'),
+      }],
+    },
+    options: {
+      indexAxis: 'y',   // horizontal bars — easier to read topic names
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.parsed.x} bill${ctx.parsed.x !== 1 ? 's' : ''}`,
+          },
+        },
+      },
+      scales: {
+        x: {
+          grid: { color: C.grayPale },
+          ticks: { font:{ size:10 }, stepSize:1, precision:0 },
+          min: 0,
+        },
+        y: {
+          grid: { display: false },
+          ticks: { font:{ size:11 } },
+        },
+      },
+      onClick: (e, elements) => {
+        if (!elements.length) return;
+        window._topicFilter = labels[elements[0].index];
+        nav('legislation');
+        setTimeout(() => renderLegTable(), 200);
+      },
+    },
+  });
+}
+
+// ── Chart 3: Scope breakdown bar ─────────────────────────────
+function buildScopeChart() {
+  destroyChart('scope');
+  const ctx = document.getElementById('activityChart');
+  if (!ctx) return;
+
+  const counts = getScopeCounts();
+  const total  = Object.values(counts).reduce((a,b) => a+b, 0);
+
+  if (total === 0) {
+    chartInstances['scope'] = emptyChart(ctx, 'bar', ['Federal','State','Local','International']);
+    return;
+  }
+
+  const labels = ['Federal', 'State', 'Local', 'International'];
+  const values = [counts.federal, counts.state, counts.local, counts.intl];
+  const colors = [C.blue, C.green, C.amber, C.purple];
+  const keys   = ['federal', 'state', 'local', 'intl'];
+
+  chartInstances['scope'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Bills by scope',
+        data: values,
+        backgroundColor: colors,
+        borderRadius: 6,
+        borderSkipped: false,
+        hoverBackgroundColor: colors.map(c => c + 'bb'),
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.parsed.y} bill${ctx.parsed.y !== 1 ? 's' : ''} (${Math.round(ctx.parsed.y / total * 100)}%)`,
+            title: ctx => ctx[0].label + ' scope',
+          },
+        },
+      },
+      scales: {
+        x: { grid:{ display:false }, ticks:{ font:{ size:11 } } },
+        y: {
+          grid: { color: C.grayPale },
+          ticks: { font:{ size:11 }, stepSize:1, precision:0 },
+          min: 0,
+        },
+      },
+      onClick: (e, elements) => {
+        if (!elements.length) return;
+        const scope = keys[elements[0].index];
+        nav('legislation');
+        setTimeout(() => {
+          const btn = document.querySelector(`[data-filter="${scope}"]`);
+          if (btn) btn.click();
+        }, 200);
+      },
+    },
+  });
+}
+
+// ── Chart 4: Priority doughnut ────────────────────────────────
+function buildPriorityChart() {
+  destroyChart('priority');
+  const ctx = document.getElementById('priorityChart');
+  if (!ctx) return;
+
+  const counts = getPriorityCounts();
+  const total  = Object.values(counts).reduce((a,b) => a+b, 0);
+
+  if (total === 0) {
+    chartInstances['priority'] = emptyChart(ctx, 'doughnut', []);
+    return;
+  }
+
+  const active = [
+    { label:'High',   value:counts.high, color:C.red,   key:'high' },
+    { label:'Medium', value:counts.med,  color:C.amber, key:'med'  },
+    { label:'Low',    value:counts.low,  color:C.gray,  key:'low'  },
+  ].filter(x => x.value > 0);
+
+  chartInstances['priority'] = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: active.map(x => x.label),
+      datasets: [{
+        data:            active.map(x => x.value),
+        backgroundColor: active.map(x => x.color),
+        borderWidth: 2,
+        borderColor: '#fff',
+        hoverOffset: 4,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.label}: ${ctx.parsed} (${Math.round(ctx.parsed / total * 100)}%)`,
+          },
+        },
+      },
+      cutout: '55%',
+      onClick: (e, elements) => {
+        if (!elements.length) return;
+        const key = active[elements[0].index]?.key;
+        nav('legislation');
+        setTimeout(() => {
+          const btn = key === 'high'
+            ? document.querySelector('[data-filter="high"]')
+            : document.querySelector('[data-filter="all"]');
+          if (btn) btn.click();
+        }, 200);
+      },
+    },
+    plugins: [{
+      id: 'priorityCenterText',
+      afterDraw(chart) {
+        const { ctx: c, chartArea: { width, height, left, top } } = chart;
+        const cx = left + width / 2;
+        const cy = top  + height / 2;
+        c.save();
+        c.textAlign = 'center';
+        c.textBaseline = 'middle';
+        c.font = `600 ${Math.min(18, width * 0.16)}px DM Sans, sans-serif`;
+        c.fillStyle = counts.high > 0 ? C.red : C.green;
+        c.fillText(counts.high, cx, cy - 7);
+        c.font = '400 10px DM Sans, sans-serif';
+        c.fillStyle = C.gray;
+        c.fillText('high pri', cx, cy + 8);
+        c.restore();
+      },
+    }],
+  });
+}
+
+// ── Legend helper ─────────────────────────────────────────────
+
+function buildLegend(containerId, items) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!items.length) {
+    el.innerHTML = '<span style="font-size:11px;color:var(--muted)">Track bills to see data</span>';
+    return;
+  }
+  el.innerHTML = items.map(item => `
+    <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);margin-right:10px;margin-bottom:4px">
+      <span style="width:10px;height:10px;border-radius:2px;background:${item.color};flex-shrink:0;display:inline-block"></span>
+      ${item.label}${item.count !== undefined ? ` <strong style="color:var(--text)">${item.count}</strong>` : ''}
+    </span>`).join('');
+}
+
+function buildAllLegends() {
+  const status   = getStatusCounts();
+  const scope    = getScopeCounts();
+  const priority = getPriorityCounts();
+
+  buildLegend('status-legend', [
+    { color:C.blue,     label:'Introduced',  count:status.intro     },
+    { color:C.amber,    label:'Committee',   count:status.committee },
+    { color:C.purple,   label:'Floor Vote',  count:status.floor     },
+    { color:C.greenMid, label:'Passed',      count:status.passed    },
+    { color:C.greenL,   label:'Enacted',     count:status.enacted   },
+    { color:C.red,      label:'Failed',      count:status.failed    },
+  ].filter(x => x.count > 0));
+
+  buildLegend('scope-legend', [
+    { color:C.blue,   label:'Federal', count:scope.federal },
+    { color:C.green,  label:'State',   count:scope.state   },
+    { color:C.amber,  label:'Local',   count:scope.local   },
+    { color:C.purple, label:'Intl',    count:scope.intl    },
+  ].filter(x => x.count > 0));
+
+  buildLegend('priority-legend', [
+    { color:C.red,   label:'High',   count:priority.high },
+    { color:C.amber, label:'Medium', count:priority.med  },
+    { color:C.gray,  label:'Low',    count:priority.low  },
+  ].filter(x => x.count > 0));
+}
+
+// ── Public API ────────────────────────────────────────────────
+
+function initCharts() {
+  buildStatusChart();
+  buildTopicChart();
+  buildScopeChart();
+  buildPriorityChart();
+  buildAllLegends();
+}
+
+function rebuildCharts() {
+  buildStatusChart();
+  buildTopicChart();
+  buildScopeChart();
+  buildPriorityChart();
+  buildAllLegends();
+}
+
+// Alias used by app.js refreshDashboard()
+function refreshCharts() {
+  rebuildCharts();
+}
+
+// Boot — small delay lets app.js load BILLS from localStorage first
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(initCharts, 150);
+});
+
+</script>
+<script>
+// public/js/app.js
+// VeloPolicy — complete application logic.
+// All API calls go to /api/claude and /api/slack (Netlify function proxies).
+// Bills are stored in localStorage and managed through the dashboard.
+
+// ─────────────────────────────────────────────────────────────
+// API HELPERS
+// ─────────────────────────────────────────────────────────────
+
+async function callClaude(body) {
+  const res = await fetch('/api/claude', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `API error ${res.status}`);
+  return data;
+}
+
+async function callSlack(payload) {
+  const res = await fetch('/api/slack', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `Slack error ${res.status}`);
+  return data;
+}
+
+// ─────────────────────────────────────────────────────────────
+// BILL STORAGE (localStorage)
+// ─────────────────────────────────────────────────────────────
+
+function loadTrackedBills() {
+  try {
+    const stored = localStorage.getItem('velopolicy_bills');
+    return stored ? JSON.parse(stored) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveTrackedBills(bills) {
+  try {
+    localStorage.setItem('velopolicy_bills', JSON.stringify(bills));
+  } catch (e) {
+    console.error('Could not save bills:', e);
+  }
+}
+
+// Keep window.BILLS in sync — charts.js reads this
+function syncBills() {
+  window.BILLS = loadTrackedBills();
+  return window.BILLS;
+}
+
+// ─────────────────────────────────────────────────────────────
+// TOAST & STATUS DOTS
+// ─────────────────────────────────────────────────────────────
+
+function toast(msg, emoji) {
+  emoji = emoji || 'i';
+  document.querySelectorAll('.toast').forEach(t => t.remove());
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = '<span>' + emoji + '</span><span>' + msg + '</span>';
+  document.body.appendChild(t);
+  setTimeout(function() { t.remove(); }, 4000);
+}
+
+function setSbDot(id, state) {
+  const el = document.getElementById(id);
+  if (el) el.className = 'sb-dot' + (state ? ' ' + state : '');
+}
+
+// ─────────────────────────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────────────────────────
+
+function renderTopbar(id) {
+  const meta = PAGE_META[id] || { title: id, sub: '' };
+  const topbar = document.getElementById('topbar');
+  if (!topbar) return;
+  topbar.innerHTML =
+    '<div class="topbar">' +
+    '<div>' +
+    '<div class="tb-title">' + meta.title + '</div>' +
+    '<div class="tb-sub">' + meta.sub + '</div>' +
+    '</div>' +
+    '<div class="tb-actions" id="topbar-actions"></div>' +
+    '</div>';
+}
+
+function nav(id) {
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.ni').forEach(function(n) { n.classList.remove('active'); });
+  const pg = document.getElementById('page-' + id);
+  if (pg) pg.classList.add('active');
+  const ni = document.querySelector('.ni[data-page="' + id + '"]');
+  if (ni) ni.classList.add('active');
+  renderTopbar(id);
+  if (id === 'dashboard') refreshDashboard();
+  if (id === 'brief') buildDevelopments();
+  if (id === 'legislation') renderLegTable();
+  if (id === 'export') { buildBillCheckboxes(); updatePreview(); }
+}
+
+// ─────────────────────────────────────────────────────────────
+// BOOT
+// ─────────────────────────────────────────────────────────────
+
+document.addEventListener('DOMContentLoaded', function() {
+  syncBills();
+
+  document.querySelectorAll('.ni[data-page]').forEach(function(el) {
+    el.addEventListener('click', function() { nav(el.dataset.page); });
+  });
+
+  document.addEventListener('click', function(e) {
+    const el = e.target.closest('[data-goto]');
+    if (el) nav(el.dataset.goto);
+  });
+
+  renderTopbar('dashboard');
+  refreshDashboard();
+  buildTopicGrid();
+  buildDevelopments();
+  buildSearchPage();
+  buildLegTable();
+  buildExportPage();
+  buildSlackPage();
+  buildAnalyzePage();
+
+  setSbDot('sb-api', 'ok');
+  setSbDot('sb-slack', 'ok');
+});
+
+// ─────────────────────────────────────────────────────────────
+// DASHBOARD
+// ─────────────────────────────────────────────────────────────
+
+function refreshDashboard() {
+  const bills     = syncBills();
+  const total     = bills.length;
+  const high      = bills.filter(function(b) { return b.p === 'high'; }).length;
+  const committee = bills.filter(function(b) { return b.s === 'committee'; }).length;
+  const enacted   = bills.filter(function(b) { return b.s === 'enacted'; }).length;
+
+  setText('m-total',     total);
+  setText('m-high',      high);
+  setText('m-committee', committee);
+  setText('m-enacted',   enacted);
+
+  const emptyEl   = document.getElementById('empty-state');
+  const contentEl = document.getElementById('dashboard-content');
+  if (emptyEl)   emptyEl.style.display   = total === 0 ? 'block' : 'none';
+  if (contentEl) contentEl.style.display = total === 0 ? 'none'  : 'block';
+
+  buildWatchlist();
+  buildManageBills();
+  if (typeof rebuildCharts === 'function') rebuildCharts();
+}
+
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
+
+function buildWatchlist() {
+  const el    = document.getElementById('watchlist');
+  if (!el) return;
+  const bills = window.BILLS || [];
+  const high  = bills.filter(function(b) { return b.p === 'high'; });
+
+  if (!high.length) {
+    el.innerHTML = '<div style="padding:20px 16px;font-size:13px;color:var(--muted)">No high-priority bills yet. Use <strong>Live Search</strong> to find and track legislation.</div>';
+    return;
+  }
+
+  el.innerHTML = high.map(function(b) {
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);cursor:pointer"' +
+      ' onmouseover="this.style.background=\'var(--surface)\'"' +
+      ' onmouseout="this.style.background=\'\'"' +
+      ' onclick="openBillDetail(\'' + escId(b.id) + '\')">' +
+      '<span class="pd ph"></span>' +
+      '<div style="flex:1;min-width:0">' +
+      '<div style="font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + b.title + '</div>' +
+      '<div style="display:flex;gap:8px;margin-top:2px">' +
+      '<span class="lid">' + b.id + '</span>' +
+      '<span style="font-size:11px;color:var(--muted)">' + (b.jur || '') + '</span>' +
+      '</div></div>' +
+      '<span class="sb s-' + b.s + '">' + STATUS_LABELS[b.s] + '</span>' +
+      '</div>';
+  }).join('');
+}
+
+function buildManageBills() {
+  const el    = document.getElementById('manage-bills-list');
+  if (!el) return;
+  const bills = window.BILLS || [];
+
+  if (!bills.length) {
+    el.innerHTML = '<div style="padding:16px;font-size:13px;color:var(--muted)">No bills tracked yet. Use <strong>Live Search</strong> to find real legislation.</div>';
+    return;
+  }
+
+  el.innerHTML = bills.map(function(b) {
+    const statusOpts = STATUS_OPTIONS.map(function(s) {
+      return '<option value="' + s + '"' + (b.s === s ? ' selected' : '') + '>' + STATUS_LABELS[s] + '</option>';
+    }).join('');
+
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap">' +
+      '<span class="pd p' + b.p[0] + '" style="flex-shrink:0"></span>' +
+      '<div style="flex:1;min-width:180px">' +
+      '<div style="font-size:12.5px;font-weight:500;line-height:1.4">' + b.title + '</div>' +
+      '<div style="display:flex;gap:8px;margin-top:3px;flex-wrap:wrap">' +
+      '<span class="lid">' + b.id + '</span>' +
+      '<span style="font-size:11px;color:var(--muted)">' + (b.jur || '') + '</span>' +
+      (b.url ? '<a href="' + b.url + '" target="_blank" rel="noopener" style="font-size:11px;color:var(--green-mid)">Source ↗</a>' : '') +
+      '</div></div>' +
+      '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">' +
+      '<select class="form-input" style="font-size:11px;padding:3px 6px;width:auto" onchange="updateBillStatus(\'' + escId(b.id) + '\',this.value)">' + statusOpts + '</select>' +
+      '<select class="form-input" style="font-size:11px;padding:3px 6px;width:auto" onchange="updateBillPriority(\'' + escId(b.id) + '\',this.value)">' +
+      '<option value="high"' + (b.p === 'high' ? ' selected' : '') + '>🔴 High</option>' +
+      '<option value="med"'  + (b.p === 'med'  ? ' selected' : '') + '>🟡 Med</option>'  +
+      '<option value="low"'  + (b.p === 'low'  ? ' selected' : '') + '>⚪ Low</option>'  +
+      '</select>' +
+      '<button class="btn sm" onclick="openBillDetail(\'' + escId(b.id) + '\')">Detail</button>' +
+      '<button class="btn sm" onclick="removeBill(\'' + escId(b.id) + '\')" style="background:var(--red-pale);color:var(--red);border-color:#f5b8b1">Remove</button>' +
+      '</div></div>';
+  }).join('');
+}
+
+// ─────────────────────────────────────────────────────────────
+// BILL CRUD
+// ─────────────────────────────────────────────────────────────
+
+function addTrackedBill(bill) {
+  const bills = loadTrackedBills();
+  if (bills.find(function(b) { return b.id === bill.id; })) {
+    toast('Already tracking: ' + bill.id, 'i');
+    return false;
+  }
+  bills.push(bill);
+  saveTrackedBills(bills);
+  syncBills();
+  refreshDashboard();
+  renderLegTable();
+  toast('Now tracking: ' + bill.title.substring(0, 45) + '...', '+');
+  return true;
+}
+
+function removeBill(id) {
+  const bills = loadTrackedBills().filter(function(b) { return b.id !== id; });
+  saveTrackedBills(bills);
+  syncBills();
+  refreshDashboard();
+  renderLegTable();
+  toast('Removed from tracker', 'x');
+}
+
+function updateBillStatus(id, newStatus) {
+  const bills = loadTrackedBills();
+  const bill  = bills.find(function(b) { return b.id === id; });
+  if (!bill) return;
+  bill.s   = newStatus;
+  bill.upd = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  saveTrackedBills(bills);
+  syncBills();
+  renderLegTable();
+  buildWatchlist();
+  if (typeof rebuildCharts === 'function') rebuildCharts();
+  toast('Status updated: ' + STATUS_LABELS[newStatus], 'ok');
+}
+
+function updateBillPriority(id, newPriority) {
+  const bills = loadTrackedBills();
+  const bill  = bills.find(function(b) { return b.id === id; });
+  if (!bill) return;
+  bill.p = newPriority;
+  saveTrackedBills(bills);
+  syncBills();
+  buildWatchlist();
+  buildManageBills();
+  if (typeof rebuildCharts === 'function') rebuildCharts();
+  toast('Priority updated', 'ok');
+}
+
+// ─────────────────────────────────────────────────────────────
+// BILL DETAIL MODAL
+// ─────────────────────────────────────────────────────────────
+
+function openBillDetail(id) {
+  const bills = window.BILLS || [];
+  const bill  = bills.find(function(b) { return b.id === id; });
+  if (!bill) return;
+
+  document.getElementById('bill-modal') && document.getElementById('bill-modal').remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'bill-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px';
+
+  const statusBtns = STATUS_OPTIONS.map(function(s) {
+    return '<button onclick="updateBillStatus(\'' + escId(bill.id) + '\',\'' + s + '\');document.getElementById(\'bill-modal\').remove()" class="btn sm' + (bill.s === s ? ' primary' : '') + '">' + STATUS_LABELS[s] + '</button>';
+  }).join('');
+
+  modal.innerHTML =
+    '<div style="background:#fff;border-radius:14px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)">' +
+    '<div style="padding:20px 22px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px">' +
+    '<div><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:4px">' + bill.id + '</div>' +
+    '<div style="font-size:15px;font-weight:600;color:var(--text);line-height:1.4">' + bill.title + '</div></div>' +
+    '<button onclick="document.getElementById(\'bill-modal\').remove()" style="background:none;border:none;font-size:22px;color:var(--muted);cursor:pointer;flex-shrink:0;padding:0;line-height:1">x</button>' +
+    '</div>' +
+    '<div style="padding:18px 22px;display:flex;flex-direction:column;gap:14px">' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">' +
+    '<div style="background:var(--surface);border-radius:8px;padding:12px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:4px">Status</div><span class="sb s-' + bill.s + '">' + STATUS_LABELS[bill.s] + '</span></div>' +
+    '<div style="background:var(--surface);border-radius:8px;padding:12px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:4px">Priority</div><span style="font-size:13px;font-weight:500">' + ({ high: 'High', med: 'Medium', low: 'Low' }[bill.p] || bill.p) + '</span></div>' +
+    '<div style="background:var(--surface);border-radius:8px;padding:12px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:4px">Jurisdiction</div><div style="font-size:13px">' + (bill.jur || 'Unknown') + '</div></div>' +
+    '<div style="background:var(--surface);border-radius:8px;padding:12px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:4px">Topic</div><div style="font-size:13px">' + (bill.topic || 'Unknown') + '</div></div>' +
+    '</div>' +
+    (bill.url ? '<a href="' + bill.url + '" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--green-mid);text-decoration:none;padding:10px 14px;background:var(--green-pale);border-radius:8px">Source: ' + (bill.source || bill.url.substring(0, 50)) + '... Link</a>' : '') +
+    '<div><div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px">Update status</div>' +
+    '<div style="display:flex;gap:6px;flex-wrap:wrap">' + statusBtns + '</div></div>' +
+    '<div style="display:flex;gap:8px;padding-top:4px;border-top:1px solid var(--border)">' +
+    '<button class="btn primary sm" onclick="prefillAnalysis(\'' + escId(bill.id) + '\');document.getElementById(\'bill-modal\').remove()">Analyze this bill</button>' +
+    '<button class="btn sm" style="background:var(--red-pale);color:var(--red);border-color:#f5b8b1" onclick="removeBill(\'' + escId(bill.id) + '\');document.getElementById(\'bill-modal\').remove()">Remove</button>' +
+    '</div></div></div>';
+
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) modal.remove();
+  });
+  document.body.appendChild(modal);
+}
+
+function prefillAnalysis(id) {
+  const bills = window.BILLS || [];
+  const bill  = bills.find(function(b) { return b.id === id; });
+  if (!bill) return;
+  nav('analyze');
+  const ta = document.getElementById('bill-text');
+  if (ta) ta.value = bill.id + ': ' + bill.title + '\nJurisdiction: ' + (bill.jur || 'Unknown') + '\nStatus: ' + STATUS_LABELS[bill.s] + '\nTopic: ' + (bill.topic || 'Unknown') + '\n\nPlease analyze this micromobility legislation.';
+}
+
+// ─────────────────────────────────────────────────────────────
+// WEEKLY BRIEF PAGE
+// ─────────────────────────────────────────────────────────────
+
+function buildTopicGrid() {
+  const el = document.getElementById('topic-grid');
+  if (!el) return;
+  el.innerHTML = TOPICS.map(function(t) {
+    const count = (window.BILLS || []).filter(function(b) { return b.topic === t.title; }).length;
+    return '<div class="tc" onclick="filterByTopic(\'' + t.title.replace(/'/g, '') + '\')">' +
+      '<div class="tc-icon">' + t.icon + '</div>' +
+      '<div class="tc-title">' + t.title + '</div>' +
+      '<div class="tc-desc">' + t.desc + '</div>' +
+      '<div class="tc-n">' + (count > 0 ? count + ' tracked' : 'Search to find bills') + ' &rarr;</div>' +
+      '</div>';
+  }).join('');
+}
+
+function filterByTopic(topic) {
+  window._topicFilter = topic;
+  nav('legislation');
+  setTimeout(renderLegTable, 150);
+}
+
+function buildDevelopments() {
+  const el    = document.getElementById('key-developments');
+  if (!el) return;
+  const bills  = window.BILLS || [];
+  const recent = bills.slice().sort(function(a, b) { return (b.upd || '').localeCompare(a.upd || ''); }).slice(0, 3);
+  const devs   = recent.length > 0
+    ? recent.map(function(b) { return { d: b.upd, title: b.title, body: (b.jur || '') + ' · ' + STATUS_LABELS[b.s] + ' · ' + (b.topic || '') }; })
+    : DEVELOPMENTS;
+
+  el.innerHTML = devs.map(function(x, i) {
+    return '<div style="display:flex;gap:14px;padding:12px 16px;' + (i < devs.length - 1 ? 'border-bottom:1px solid var(--border)' : '') + '">' +
+      '<div style="min-width:52px;font-size:11px;color:var(--muted);text-align:right;padding-top:2px;flex-shrink:0">' + x.d + '</div>' +
+      '<div><div style="font-size:13px;font-weight:600;margin-bottom:3px">' + x.title + '</div>' +
+      '<div style="font-size:12.5px;color:var(--muted);line-height:1.6">' + x.body + '</div></div>' +
+      '</div>';
+  }).join('');
+
+  const slackBtn = document.getElementById('brief-slack-btn');
+  if (slackBtn && !slackBtn._bound) {
+    slackBtn._bound = true;
+    slackBtn.addEventListener('click', function() {
+      nav('slack');
+      setTimeout(function() { document.getElementById('slack-send-now') && document.getElementById('slack-send-now').click(); }, 400);
+    });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// LIVE SEARCH
+// ─────────────────────────────────────────────────────────────
+
+function buildSearchPage() {
+  const topicsEl = document.getElementById('search-topics');
+  if (topicsEl) {
+    topicsEl.innerHTML = SEARCH_TOPICS.map(function(t) {
+      return '<span class="stopic" data-q="' + t + '">' + t + '</span>';
+    }).join('');
+    topicsEl.querySelectorAll('.stopic').forEach(function(el) {
+      el.addEventListener('click', function() {
+        topicsEl.querySelectorAll('.stopic').forEach(function(s) { s.classList.remove('on'); });
+        el.classList.add('on');
+        const input = document.getElementById('search-q');
+        if (input) input.value = el.dataset.q;
+        doSearch();
+      });
+    });
+  }
+
+  document.getElementById('search-btn') && document.getElementById('search-btn').addEventListener('click', doSearch);
+  const searchQ = document.getElementById('search-q');
+  if (searchQ) searchQ.addEventListener('keydown', function(e) { if (e.key === 'Enter') doSearch(); });
+
+  const addMonBtn = document.getElementById('add-monitor-btn');
+  if (addMonBtn) addMonBtn.addEventListener('click', function() {
+    const q = document.getElementById('search-q') && document.getElementById('search-q').value.trim();
+    if (!q) { toast('Enter a query first', '!'); return; }
+    saveMonitor(q);
+  });
+
+  renderMonitorList();
+}
+
+function loadMonitors() {
+  try { return JSON.parse(localStorage.getItem('velopolicy_monitors') || '[]'); }
+  catch (e) { return []; }
+}
+
+function saveMonitor(q) {
+  const monitors = loadMonitors();
+  if (monitors.find(function(m) { return m.q === q; })) { toast('Monitor already exists', 'i'); return; }
+  monitors.push({ q: q, freq: 'Weekly', last: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), hits: 0 });
+  localStorage.setItem('velopolicy_monitors', JSON.stringify(monitors));
+  renderMonitorList();
+  toast('Monitor saved: ' + q.substring(0, 40), '+');
+}
+
+function removeMonitor(q) {
+  const monitors = loadMonitors().filter(function(m) { return m.q !== q; });
+  localStorage.setItem('velopolicy_monitors', JSON.stringify(monitors));
+  renderMonitorList();
+  toast('Monitor removed', 'x');
+}
+
+function renderMonitorList() {
+  const el = document.getElementById('monitor-list');
+  if (!el) return;
+  const monitors = loadMonitors();
+  if (!monitors.length) {
+    el.innerHTML = '<div style="padding:14px 16px;font-size:13px;color:var(--muted)">No monitors yet. Run a search and click "+ Save as Monitor" to track a topic automatically.</div>';
+    return;
+  }
+  el.innerHTML = monitors.map(function(m) {
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border)">' +
+      '<span style="font-size:14px">bell</span>' +
+      '<div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + m.q + '</div>' +
+      '<div style="font-size:11px;color:var(--muted)">' + m.freq + ' - Last run: ' + m.last + '</div></div>' +
+      '<button class="btn sm" onclick="quickRunMonitor(\'' + m.q.replace(/'/g, '') + '\')">Run now</button>' +
+      '<button class="btn sm" onclick="removeMonitor(\'' + m.q.replace(/'/g, '') + '\')" style="color:var(--red);border-color:#f5b8b1">Remove</button>' +
+      '</div>';
+  }).join('');
+}
+
+function quickRunMonitor(q) {
+  const input = document.getElementById('search-q');
+  if (input) input.value = q;
+  nav('search');
+  setTimeout(doSearch, 100);
+}
+
+async function doSearch() {
+  const q = document.getElementById('search-q') && document.getElementById('search-q').value.trim();
+  if (!q) { toast('Enter a search query'); return; }
+
+  const sr  = document.getElementById('search-results');
+  const lbl = document.getElementById('search-status-label');
+  const act = document.getElementById('search-hdr-actions');
+
+  setSbDot('sb-search', 'busy');
+  if (sr)  sr.innerHTML    = '<div class="loading-row"><div class="spin"></div>Searching live web for legislation...</div>';
+  if (lbl) lbl.textContent = 'Searching...';
+  if (act) act.innerHTML   = '';
+
+  const prompt = 'You are a micromobility policy research assistant. Search the web for recent news, bills, and legislative developments about: "' + q + '".\n\nFocus on government websites, advocacy organizations, and reputable news sources.\n\nReturn ONLY a JSON array, no markdown:\n[{"title":"Full title","snippet":"2-3 sentence description","source":"Publication name","url":"full URL","date":"Month Year","type":"bill|news|report|agency","relevance":"high|medium","jurisdiction":"state or body","billId":"bill number or empty string"}]\n\nReturn 4-6 items. Prioritize actual bills.';
+
+  try {
+    const data = await callClaude({
+      max_tokens: 1800,
+      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    setSbDot('sb-search', 'ok');
+
+    const textBlock = data.content && data.content.find(function(c) { return c.type === 'text'; });
+    let results = [];
+    if (textBlock) {
+      try {
+        const clean = textBlock.text.replace(/```json|```/g, '').trim();
+        const s = clean.indexOf('[');
+        const e = clean.lastIndexOf(']');
+        if (s >= 0 && e > s) results = JSON.parse(clean.slice(s, e + 1));
+      } catch (_) {}
+    }
+
+    if (!results.length) {
+      const fallback = data.content
+        ? data.content.filter(function(c) { return c.type === 'text'; }).map(function(c) { return c.text; }).join('\n')
+        : 'No results found.';
+      if (sr)  sr.innerHTML    = '<div style="padding:16px;font-size:13px;line-height:1.75">' + fallback.replace(/\n/g, '<br>') + '</div>';
+      if (lbl) lbl.textContent = 'Results for: ' + q;
+      return;
+    }
+
+    if (lbl) lbl.textContent = results.length + ' result' + (results.length !== 1 ? 's' : '') + ' for: ' + q;
+    if (act) act.innerHTML   = '<button class="btn secondary sm" onclick="saveMonitor(\'' + q.replace(/'/g, '').substring(0, 60) + '\')">+ Save as Monitor</button>';
+
+    const bills = window.BILLS || [];
+    if (sr) sr.innerHTML = results.map(function(r) {
+      const tracked = r.billId && bills.find(function(b) { return b.id === r.billId; });
+      const rJson   = JSON.stringify(r).replace(/"/g, '&quot;');
+      return '<div class="result-item">' +
+        '<div class="ri-meta">' +
+        '<span class="sb ' + (r.relevance === 'high' ? 's-enacted' : 's-committee') + '">' + (r.relevance === 'high' ? 'High relevance' : 'Relevant') + '</span>' +
+        '<span class="stag">' + (r.type || 'news') + '</span>' +
+        (r.jurisdiction ? '<span class="stag">' + r.jurisdiction + '</span>' : '') +
+        '<span style="font-size:10.5px;color:var(--muted)">' + (r.date || '') + '</span>' +
+        '</div>' +
+        '<div class="ri-title">' + r.title + '</div>' +
+        '<div class="ri-snippet">' + r.snippet + '</div>' +
+        '<div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
+        '<a class="ri-source" href="' + (r.url || '#') + '" target="_blank" rel="noopener">' + (r.source || 'Source') + ' Link</a>' +
+        (tracked
+          ? '<span class="btn sm" style="background:var(--green-pale);color:var(--green);border-color:var(--green-light);cursor:default">Tracked</span>'
+          : '<button class="btn primary sm" onclick=\'trackFromSearch(' + rJson + ')\'>+ Track Bill</button>') +
+        '<button class="btn sm" onclick="nav(\'analyze\');document.getElementById(\'bill-text\').value=\'' + (r.title + ': ' + r.snippet).replace(/'/g, '').replace(/\n/g, ' ').substring(0, 200) + '\'">Analyze</button>' +
+        '</div></div>';
+    }).join('');
+
+  } catch (err) {
+    setSbDot('sb-search', '');
+    if (sr)  sr.innerHTML    = '<div style="padding:16px;font-size:13px;color:var(--red)">Search failed: ' + err.message + '<br><small style="color:var(--muted)">Check that ANTHROPIC_API_KEY is set in Netlify environment variables.</small></div>';
+    if (lbl) lbl.textContent = 'Search failed';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// TRACK FROM SEARCH
+// ─────────────────────────────────────────────────────────────
+
+function trackFromSearch(result) {
+  const bill = {
+    id:     (result.billId && result.billId.trim()) ||
+            (result.title.match(/\b([HS]\.?\s*\d+|[A-Z]{2,3}\s+[A-Z]+\s+\d+|Local\s+Law\s+\d+)\b/i) || [])[0] ||
+            'REF-' + Date.now().toString().slice(-6),
+    title:  result.title.replace(/\s*[--]\s*[^--]+$/, '').trim(),
+    topic:  guessTopic(result.title + ' ' + result.snippet),
+    scope:  guessScope(result.title + ' ' + result.snippet + ' ' + (result.jurisdiction || '')),
+    jur:    result.jurisdiction || guessJurisdiction(result.title + ' ' + result.snippet),
+    s:      'intro',
+    p:      result.relevance === 'high' ? 'high' : 'med',
+    upd:    result.date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    url:    result.url || '',
+    source: result.source || '',
+  };
+
+  const confirmed = confirm(
+    'Add to your tracker?\n\n' +
+    'ID: ' + bill.id + '\n' +
+    'Title: ' + bill.title.substring(0, 70) + (bill.title.length > 70 ? '...' : '') + '\n' +
+    'Topic: ' + bill.topic + '\n' +
+    'Jurisdiction: ' + bill.jur + '\n\n' +
+    'Click OK to track this bill.'
+  );
+
+  if (confirmed) {
+    addTrackedBill(bill);
+    doSearch(); // refresh to show tracked state
+  }
+}
+
+function guessTopic(text) {
+  const t = text.toLowerCase();
+  if (/tax credit|rebate|incentive|subsidy|purchase program/.test(t))          return 'E-Bike Incentives';
+  if (/lane|infrastructure|path|trail|network|intersection|corridor/.test(t))  return 'Infrastructure';
+  if (/helmet|safety|speed limit|liability|injury|crash/.test(t))              return 'Safety & Liability';
+  if (/parking|sidewalk|permit|dock|fleet|zoning|ban/.test(t))                 return 'Parking & Zoning';
+  if (/data|privacy|gps|tracking|surveillance|location/.test(t))               return 'Data & Privacy';
+  if (/eu |european|uk |united kingdom|canada|international/.test(t))          return 'International';
+  return 'E-Bike Incentives';
+}
+
+function guessScope(text) {
+  const t = text.toLowerCase();
+  if (/federal|congress|senate|house of rep|u\.s\. |national/.test(t))             return 'federal';
+  if (/city|municipal|local|county|ordinance|nyc|chicago|seattle|denver/.test(t)) return 'local';
+  if (/eu |european union|uk |united kingdom|canada|international/.test(t))        return 'intl';
+  return 'state';
+}
+
+function guessJurisdiction(text) {
+  const t = text.toLowerCase();
+  const states = {
+    'california':'California','texas':'Texas','new york':'New York','florida':'Florida',
+    'washington':'Washington','oregon':'Oregon','colorado':'Colorado','illinois':'Illinois',
+    'massachusetts':'Massachusetts','minnesota':'Minnesota','michigan':'Michigan',
+    'pennsylvania':'Pennsylvania','georgia':'Georgia','arizona':'Arizona','nevada':'Nevada',
+    'ohio':'Ohio','virginia':'Virginia','maryland':'Maryland','new jersey':'New Jersey',
+    'utah':'Utah','north carolina':'North Carolina','indiana':'Indiana','tennessee':'Tennessee',
+  };
+  for (var key in states) {
+    if (t.indexOf(key) >= 0) return states[key];
+  }
+  if (/federal|congress|u\.s\. |national/.test(t)) return 'U.S. Federal';
+  if (/european union|eu directive/.test(t))        return 'European Union';
+  if (/united kingdom|uk /.test(t))                 return 'United Kingdom';
+  if (/canada|canadian/.test(t))                    return 'Canada';
+  if (/nyc|new york city/.test(t))                  return 'New York City';
+  return 'United States';
+}
+
+// ─────────────────────────────────────────────────────────────
+// BILL TRACKER TABLE
+// ─────────────────────────────────────────────────────────────
+
+var legFilter = 'all';
+
+function buildLegTable() {
+  const filtersEl = document.getElementById('leg-filters');
+  if (!filtersEl) return;
+
+  const leftFilters = [
+    { f: 'all',     label: 'All'           },
+    { f: 'federal', label: 'Federal'       },
+    { f: 'state',   label: 'State'         },
+    { f: 'local',   label: 'Local'         },
+    { f: 'intl',    label: 'International' },
+  ];
+  const rightFilters = [
+    { f: 'high',    label: 'High Priority' },
+    { f: 'floor',   label: 'Floor Vote'    },
+    { f: 'enacted', label: 'Enacted'       },
+  ];
+
+  filtersEl.innerHTML =
+    leftFilters.map(function(f) {
+      return '<button class="fb' + (f.f === 'all' ? ' active' : '') + '" data-filter="' + f.f + '">' + f.label + '</button>';
+    }).join('') +
+    '<span style="margin-left:auto;display:flex;gap:6px">' +
+    rightFilters.map(function(f) {
+      return '<button class="fb" data-filter="' + f.f + '">' + f.label + '</button>';
+    }).join('') +
+    '</span>';
+
+  filtersEl.querySelectorAll('.fb').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      filtersEl.querySelectorAll('.fb').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      legFilter = btn.dataset.filter;
+      window._topicFilter = null;
+      var banner = document.getElementById('topic-filter-banner');
+      if (banner) banner.remove();
+      renderLegTable();
+    });
+  });
+
+  renderLegTable();
+}
+
+function renderLegTable() {
+  const el    = document.getElementById('leg-body');
+  if (!el) return;
+  const bills = window.BILLS || [];
+
+  if (!bills.length) {
+    el.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted);font-size:13px">No bills tracked yet &mdash; <span style="color:var(--green);cursor:pointer;text-decoration:underline" onclick="nav(\'search\')">use Live Search to find and track legislation</span></td></tr>';
+    return;
+  }
+
+  const allBtn = document.querySelector('[data-filter="all"]');
+  if (allBtn) allBtn.textContent = 'All (' + bills.length + ')';
+
+  var filtered = bills.filter(function(b) {
+    if (window._topicFilter && b.topic !== window._topicFilter) return false;
+    if (legFilter === 'all')     return true;
+    if (legFilter === 'high')    return b.p === 'high';
+    if (legFilter === 'enacted') return b.s === 'enacted';
+    if (legFilter === 'floor')   return b.s === 'floor';
+    return b.scope === legFilter;
+  });
+
+  // Topic filter banner
+  var bannerEl = document.getElementById('topic-filter-banner');
+  if (window._topicFilter) {
+    if (!bannerEl) {
+      var banner = document.createElement('div');
+      banner.id = 'topic-filter-banner';
+      banner.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--green-pale);border-radius:8px;font-size:12.5px;color:var(--green);margin-bottom:12px';
+      banner.innerHTML = '<span>Topic: <strong>' + window._topicFilter + '</strong></span><button onclick="window._topicFilter=null;document.getElementById(\'topic-filter-banner\').remove();renderLegTable()" class="btn sm" style="font-size:11px;padding:2px 8px;margin-left:auto">Clear x</button>';
+      var filtersEl = document.getElementById('leg-filters');
+      if (filtersEl) filtersEl.insertAdjacentElement('afterend', banner);
+    }
+  } else {
+    if (bannerEl) bannerEl.remove();
+  }
+
+  if (!filtered.length) {
+    el.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted);font-size:13px">No bills match this filter.</td></tr>';
+    return;
+  }
+
+  el.innerHTML = filtered.map(function(b) {
+    return '<tr onclick="openBillDetail(\'' + escId(b.id) + '\')" style="cursor:pointer">' +
+      '<td><span class="pd p' + b.p[0] + '"></span></td>' +
+      '<td class="lid">' + b.id + '</td>' +
+      '<td class="ltitle">' + b.title + '</td>' +
+      '<td><span class="stag">' + (b.topic || '-') + '</span></td>' +
+      '<td><span class="scope-pill sp-' + (b.scope || 'state') + '">' + (b.scope || 'state').toUpperCase() + '</span></td>' +
+      '<td style="font-size:12px;color:var(--muted)">' + (b.jur || '-') + '</td>' +
+      '<td><span class="sb s-' + b.s + '">' + STATUS_LABELS[b.s] + '</span></td>' +
+      '<td style="font-size:11px;color:var(--muted);white-space:nowrap">' + (b.upd || '-') + '</td>' +
+      '</tr>';
+  }).join('');
+}
+
+// ─────────────────────────────────────────────────────────────
+// PDF EXPORT
+// ─────────────────────────────────────────────────────────────
+
+var exportType      = 'weekly';
+var selectedTopic   = '';
+var selectedBillIds = new Set();
+
+function buildExportPage() {
+  const optEl = document.getElementById('export-options');
+  if (optEl) {
+    optEl.innerHTML = EXPORT_OPTIONS.map(function(o, i) {
+      return '<div class="export-option' + (i === 0 ? ' selected' : '') + '" data-export="' + o.id + '">' +
+        '<div class="eo-icon">' + o.icon + '</div>' +
+        '<div class="eo-title">' + o.title + '</div>' +
+        '<div class="eo-desc">' + o.desc + '</div></div>';
+    }).join('');
+    optEl.querySelectorAll('.export-option').forEach(function(el) {
+      el.addEventListener('click', function() {
+        optEl.querySelectorAll('.export-option').forEach(function(e) { e.classList.remove('selected'); });
+        el.classList.add('selected');
+        exportType = el.dataset.export;
+        updateExportUI();
+      });
+    });
+  }
+
+  const secEl = document.getElementById('export-sections');
+  if (secEl) {
+    secEl.innerHTML = EXPORT_SECTIONS.map(function(s) {
+      return '<label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" id="' + s.id + '"' + (s.def ? ' checked' : '') + '> ' + s.label + '</label>';
+    }).join('');
+    secEl.querySelectorAll('input').forEach(function(el) { el.addEventListener('change', updatePreview); });
+  }
+
+  selectedTopic = TOPIC_OPTIONS[0] || '';
+  const topicChips = document.getElementById('topic-filter-chips');
+  if (topicChips) {
+    topicChips.innerHTML = TOPIC_OPTIONS.map(function(t, i) {
+      return '<span class="stopic' + (i === 0 ? ' on' : '') + '" data-topic="' + t + '">' + t + '</span>';
+    }).join('');
+    topicChips.querySelectorAll('.stopic').forEach(function(el) {
+      el.addEventListener('click', function() {
+        topicChips.querySelectorAll('.stopic').forEach(function(s) { s.classList.remove('on'); });
+        el.classList.add('on');
+        selectedTopic = el.dataset.topic;
+        updatePreview();
+      });
+    });
+  }
+
+  buildBillCheckboxes();
+
+  var priEl  = document.getElementById('export-priority');
+  var sorEl  = document.getElementById('export-sort');
+  if (priEl) priEl.addEventListener('change', updatePreview);
+  if (sorEl) sorEl.addEventListener('change', updatePreview);
+
+  var genBtn = document.getElementById('generate-pdf-btn');
+  if (genBtn) genBtn.addEventListener('click', generatePDF);
+
+  updateExportUI();
+}
+
+function buildBillCheckboxes() {
+  const billList = document.getElementById('bill-filter-list');
+  if (!billList) return;
+  const bills = window.BILLS || [];
+  selectedBillIds = new Set(bills.map(function(b) { return b.id; }));
+
+  if (!bills.length) {
+    billList.innerHTML = '<div style="font-size:13px;color:var(--muted)">No bills tracked yet.</div>';
+    return;
+  }
+
+  billList.innerHTML = bills.map(function(b) {
+    return '<label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer">' +
+      '<input type="checkbox" data-bill-id="' + escId(b.id) + '" checked>' +
+      '<span class="pd p' + b.p[0] + '" style="flex-shrink:0"></span>' +
+      '<span style="flex:1">' + b.title + '</span>' +
+      '<span class="sb s-' + b.s + '" style="flex-shrink:0">' + STATUS_LABELS[b.s] + '</span>' +
+      '</label>';
+  }).join('');
+
+  billList.querySelectorAll('input[type=checkbox]').forEach(function(el) {
+    el.addEventListener('change', function() {
+      if (el.checked) selectedBillIds.add(el.dataset.billId);
+      else            selectedBillIds.delete(el.dataset.billId);
+      updatePreview();
+    });
+  });
+}
+
+function updateExportUI() {
+  var topicRow = document.getElementById('topic-filter-row');
+  var billRow  = document.getElementById('bill-filter-row');
+  if (topicRow) topicRow.style.display = exportType === 'topic'  ? 'block' : 'none';
+  if (billRow)  billRow.style.display  = exportType === 'custom' ? 'block' : 'none';
+  if (exportType === 'custom') buildBillCheckboxes();
+  updatePreview();
+}
+
+function getExportBills() {
+  const bills    = window.BILLS || [];
+  const priority = (document.getElementById('export-priority') && document.getElementById('export-priority').value) || 'all';
+  const sort     = (document.getElementById('export-sort')     && document.getElementById('export-sort').value)     || 'priority';
+
+  var result = bills.slice();
+  if (exportType === 'highpri')  result = result.filter(function(b) { return b.p === 'high'; });
+  if (exportType === 'topic')    result = result.filter(function(b) { return b.topic === selectedTopic; });
+  if (exportType === 'custom')   result = result.filter(function(b) { return selectedBillIds.has(b.id); });
+  if (priority === 'high')       result = result.filter(function(b) { return b.p === 'high'; });
+  if (priority === 'highmed')    result = result.filter(function(b) { return b.p === 'high' || b.p === 'med'; });
+
+  var priOrd = { high: 0, med: 1, low: 2 };
+  var staOrd = { floor: 0, committee: 1, intro: 2, passed: 3, enacted: 4, failed: 5 };
+  if (sort === 'priority')     result.sort(function(a,b){ return (priOrd[a.p]||0)-(priOrd[b.p]||0); });
+  if (sort === 'status')       result.sort(function(a,b){ return (staOrd[a.s]||0)-(staOrd[b.s]||0); });
+  if (sort === 'updated')      result.sort(function(a,b){ return (b.upd||'').localeCompare(a.upd||''); });
+  if (sort === 'jurisdiction') result.sort(function(a,b){ return (a.jur||'').localeCompare(b.jur||''); });
+  return result;
+}
+
+function updatePreview() {
+  const bills    = getExportBills();
+  const countEl  = document.getElementById('preview-bill-count');
+  const titleEl  = document.getElementById('preview-title');
+  const subEl    = document.getElementById('preview-subtitle');
+  const descEl   = document.getElementById('preview-desc');
+  const tableEl  = document.getElementById('preview-table-wrap');
+
+  if (countEl) countEl.textContent = bills.length + ' bill' + (bills.length !== 1 ? 's' : '') + ' selected';
+
+  var titles = { weekly:'Weekly Policy Brief', tracker:'Full Bill Tracker', topic:'Topic Brief - ' + selectedTopic, highpri:'High Priority Bills', custom:'Custom Report' };
+  var today  = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  var subs   = { weekly:'Weekly Brief - ' + today, tracker:'Full Tracker - ' + bills.length + ' bills - ' + today, topic:selectedTopic + ' - ' + today, highpri:'High Priority - ' + today, custom:'Custom Report - ' + today };
+
+  if (titleEl) titleEl.textContent = titles[exportType] || '';
+  if (subEl)   subEl.textContent   = subs[exportType]   || '';
+  if (descEl)  descEl.textContent  = bills.length + ' bill' + (bills.length !== 1 ? 's' : '') + ' included.';
+
+  if (tableEl && bills.length > 0) {
+    tableEl.innerHTML =
+      '<table class="preview-table" style="margin-top:10px"><tr><th>Bill ID</th><th>Title</th><th>Status</th></tr>' +
+      bills.slice(0, 5).map(function(b) {
+        return '<tr><td>' + b.id + '</td><td>' + b.title.substring(0, 38) + (b.title.length > 38 ? '...' : '') + '</td><td>' + STATUS_LABELS[b.s] + '</td></tr>';
+      }).join('') +
+      (bills.length > 5 ? '<tr><td colspan="3" style="color:#999;font-style:italic;font-size:10px">...and ' + (bills.length - 5) + ' more</td></tr>' : '') +
+      '</table>';
+  } else if (tableEl) {
+    tableEl.innerHTML = '';
+  }
+}
+
+function generatePDF() {
+  const statusEl = document.getElementById('pdf-status');
+  const bills    = getExportBills();
+  const include  = {
+    summary:      document.getElementById('cb-summary')      && document.getElementById('cb-summary').checked,
+    developments: document.getElementById('cb-developments') && document.getElementById('cb-developments').checked,
+    table:        document.getElementById('cb-table')        && document.getElementById('cb-table').checked,
+    highpri:      document.getElementById('cb-highpri')      && document.getElementById('cb-highpri').checked,
+    stats:        document.getElementById('cb-stats')        && document.getElementById('cb-stats').checked,
+  };
+
+  var titles   = { weekly:'Weekly Policy Brief', tracker:'Full Bill Tracker', topic:'Topic Brief - ' + selectedTopic, highpri:'High Priority Bills', custom:'Custom Report' };
+  var reportTitle = titles[exportType] || 'VeloPolicy Report';
+  var today    = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+  var billRows = bills.map(function(b) {
+    return '<tr><td>' + b.id + '</td><td>' + b.title + '</td><td>' + (b.jur||'-') + '</td><td>' + (b.topic||'-') + '</td><td>' + STATUS_LABELS[b.s] + '</td><td style="color:' + (b.p==='high'?'#c0392b':b.p==='med'?'#e9a000':'#94a3b8') + ';font-weight:600">' + b.p.charAt(0).toUpperCase() + b.p.slice(1) + '</td></tr>';
+  }).join('');
+
+  var statsSection = include.stats
+    ? '<h2>Statistics</h2><p><strong>Total:</strong> ' + bills.length + ' bills &nbsp;|&nbsp; <strong>High priority:</strong> ' + bills.filter(function(b){return b.p==='high';}).length + ' &nbsp;|&nbsp; <strong>In committee:</strong> ' + bills.filter(function(b){return b.s==='committee';}).length + ' &nbsp;|&nbsp; <strong>Enacted:</strong> ' + bills.filter(function(b){return b.s==='enacted';}).length + '</p>'
+    : '';
+
+  var highPriSection = include.highpri
+    ? '<h2>High Priority Detail</h2>' + bills.filter(function(b){return b.p==='high';}).map(function(b){
+        return '<div class="dev"><div class="dev-date">' + b.id + ' &middot; ' + (b.jur||'') + ' &middot; ' + STATUS_LABELS[b.s] + '</div><div class="dev-title">' + b.title + '</div><p>Topic: ' + (b.topic||'-') + ' &middot; Updated: ' + (b.upd||'-') + '</p>' + (b.url?'<p><a href="'+b.url+'" style="color:#1a4731">'+b.url+'</a></p>':'') + '</div>';
+      }).join('')
+    : '';
+
+  var devsSection = include.developments
+    ? '<h2>Recent Developments</h2>' + (window.BILLS||[]).slice().sort(function(a,b){return (b.upd||'').localeCompare(a.upd||'');}).slice(0,5).map(function(b){
+        return '<div class="dev"><div class="dev-date">' + (b.upd||'') + '</div><div class="dev-title">' + b.title + '</div><p>' + (b.jur||'') + ' &middot; ' + STATUS_LABELS[b.s] + ' &middot; ' + (b.topic||'') + '</p></div>';
+      }).join('')
+    : '';
+
+  var html = '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>VeloPolicy - ' + reportTitle + '</title><style>' +
+    'body{font-family:Georgia,serif;margin:48px;color:#111;font-size:13px;line-height:1.7;max-width:760px}' +
+    '.header{border-bottom:3px solid #1a4731;padding-bottom:14px;margin-bottom:28px;display:flex;justify-content:space-between;align-items:flex-end}' +
+    '.logo{font-size:20px;font-weight:700;color:#1a4731}.logo-sub{font-size:11px;color:#666;margin-top:2px}' +
+    '.meta{text-align:right;font-size:11px;color:#666}' +
+    'h1{font-size:22px;color:#111;margin:0 0 24px;font-weight:700}' +
+    'h2{font-size:11px;color:#1a4731;margin:28px 0 8px;text-transform:uppercase;letter-spacing:.8px;font-family:Arial,sans-serif;border-bottom:1px solid #d8f3dc;padding-bottom:4px}' +
+    'p{margin-bottom:10px;color:#333;font-family:Arial,sans-serif;font-size:13px}' +
+    '.dev{margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #eee}' +
+    '.dev-date{font-size:10px;color:#999;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:.5px}' +
+    '.dev-title{font-size:14px;font-weight:700;margin:3px 0 6px}' +
+    'table{width:100%;border-collapse:collapse;margin:12px 0;font-size:11px;font-family:Arial,sans-serif}' +
+    'th{text-align:left;padding:7px 8px;border-bottom:2px solid #1a4731;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#666;background:#f9fafb}' +
+    'td{padding:7px 8px;border-bottom:1px solid #eee;color:#333;vertical-align:top}' +
+    'tr:nth-child(even) td{background:#fafafa}' +
+    '.footer{margin-top:52px;padding-top:12px;border-top:1px solid #eee;font-size:10px;color:#999;text-align:center;font-family:Arial,sans-serif}' +
+    '@media print{body{margin:24px}h2{page-break-after:avoid}.dev{page-break-inside:avoid}}' +
+    '</style></head><body>' +
+    '<div class="header"><div><div class="logo">VeloPolicy</div><div class="logo-sub">Micromobility Policy Intelligence</div></div><div class="meta">' + reportTitle + '<br>Generated ' + today + '</div></div>' +
+    '<h1>' + reportTitle + '</h1>' +
+    (include.summary ? '<h2>Summary</h2><p>This report covers <strong>' + bills.length + ' tracked bill' + (bills.length!==1?'s':'') + '</strong>. High priority: <strong>' + bills.filter(function(b){return b.p==='high';}).length + '</strong> &middot; In committee: <strong>' + bills.filter(function(b){return b.s==='committee';}).length + '</strong> &middot; Enacted: <strong>' + bills.filter(function(b){return b.s==='enacted';}).length + '</strong>. Generated ' + today + '.</p>' : '') +
+    statsSection + devsSection +
+    (include.table && bills.length > 0 ? '<h2>Legislation - ' + bills.length + ' Bill' + (bills.length!==1?'s':'') + '</h2><table><thead><tr><th>Bill ID</th><th>Title</th><th>Jurisdiction</th><th>Topic</th><th>Status</th><th>Priority</th></tr></thead><tbody>' + billRows + '</tbody></table>' : '') +
+    highPriSection +
+    '<div class="footer">VeloPolicy &middot; velopolicy.io &middot; ' + today + ' &middot; ' + reportTitle + '</div>' +
+    '</body></html>';
+
+  var filename = 'VeloPolicy_' + exportType + '_' + new Date().toISOString().slice(0,10) + '.html';
+  var blob     = new Blob([html], { type: 'text/html' });
+  var url      = URL.createObjectURL(blob);
+  var a        = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+
+  if (statusEl) {
+    statusEl.textContent = 'Downloaded ' + filename + ' - open in browser then File > Print > Save as PDF';
+    setTimeout(function() { statusEl.textContent = ''; }, 10000);
+  }
+  toast('Report downloaded!', '+');
+}
+
+// ─────────────────────────────────────────────────────────────
+// SLACK AUTOMATION
+// ─────────────────────────────────────────────────────────────
+
+function buildSlackPage() {
+  const daysEl = document.getElementById('schedule-days');
+  if (daysEl) {
+    daysEl.innerHTML = ['Monday','Tuesday','Wednesday','Thursday','Friday'].map(function(d,i) {
+      return '<span class="sch-opt' + (i===0?' on':'') + '">' + d + '</span>';
+    }).join('');
+    daysEl.querySelectorAll('.sch-opt').forEach(function(el) {
+      el.addEventListener('click', function() { el.classList.toggle('on'); });
+    });
+  }
+
+  const checksEl = document.getElementById('slack-content-checks');
+  if (checksEl) {
+    checksEl.innerHTML = [
+      ['sl-summary',      'Weekly headline and summary',    true ],
+      ['sl-developments', 'Recent bill status changes',     true ],
+      ['sl-highpri',      'High-priority bill updates',     true ],
+      ['sl-monitors',     'New search monitor results',     false],
+      ['sl-count',        'Bill count statistics',          false],
+    ].map(function(x) {
+      return '<label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" id="' + x[0] + '"' + (x[2]?' checked':'') + '> ' + x[1] + '</label>';
+    }).join('');
+  }
+
+  const chanEl = document.getElementById('slack-channel');
+  const botEl  = document.getElementById('slack-botname');
+  if (chanEl) chanEl.addEventListener('input', function() {
+    var el = document.getElementById('slack-preview-channel');
+    if (el) el.textContent = this.value || '#channel';
+  });
+  if (botEl) botEl.addEventListener('input', function() {
+    var el = document.getElementById('slack-preview-botname');
+    if (el) el.textContent = this.value || 'Bot';
+  });
+
+  var stored  = JSON.parse(localStorage.getItem('velopolicy_slack_history') || '[]');
+  var history = stored.concat(SLACK_HISTORY).slice(0, 8);
+  var histEl  = document.getElementById('slack-history');
+  if (histEl) {
+    histEl.innerHTML = history.length
+      ? history.map(function(h) {
+          return '<div class="hist-item"><span class="hist-icon">' + (h.icon||'msg') + '</span><div class="hist-detail"><div style="font-size:12px;font-weight:500">' + h.d + '</div><div class="hist-time">' + h.t + '</div></div><span class="hist-status hs-' + h.s + '">' + ({ok:'Sent',fail:'Failed',pending:'Pending'}[h.s]||h.s) + '</span></div>';
+        }).join('')
+      : '<div style="font-size:13px;color:var(--muted);padding:8px 0">No sends yet.</div>';
+  }
+
+  var sendBtn = document.getElementById('slack-send-now');
+  var saveBtn = document.getElementById('slack-save-schedule');
+  if (sendBtn && !sendBtn._bound) { sendBtn._bound = true; sendBtn.addEventListener('click', sendSlackNow); }
+  if (saveBtn && !saveBtn._bound) { saveBtn._bound = true; saveBtn.addEventListener('click', saveSchedule); }
+}
+
+async function sendSlackNow() {
+  const btn = document.getElementById('slack-send-now');
+  if (btn) { btn.disabled = true; btn.textContent = 'Generating...'; }
+  setSbDot('sb-slack', 'busy');
+
+  const bills   = window.BILLS || [];
+  const highPri = bills.filter(function(b) { return b.p === 'high'; });
+  const recent  = bills.slice().sort(function(a,b){ return (b.upd||'').localeCompare(a.upd||''); }).slice(0,3);
+
+  var billContext = bills.length > 0
+    ? 'You are tracking ' + bills.length + ' bills. High priority: ' + highPri.length + '. Recent: ' + recent.map(function(b){ return b.id + ' (' + b.title.substring(0,40) + ', ' + STATUS_LABELS[b.s] + ')'; }).join('; ') + '.'
+    : 'No bills are currently tracked.';
+
+  var prompt = 'You are VeloPolicy, a micromobility policy intelligence assistant. Write a concise Slack message for this week\'s brief.\n\nContext: ' + billContext + '\n\nInclude:\n1. A short headline (1 sentence)\n2. Top 3 bill updates as bullet points with bullet\n3. A brief closing line\n\nUse Slack markdown: *bold*. Under 200 words. Be direct and informative.';
+
+  try {
+    const data = await callClaude({
+      max_tokens: 400,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    const msgText = (data.content && data.content.find(function(c){ return c.type==='text'; }) || {}).text || 'Brief generated.';
+
+    var previewEl = document.getElementById('slack-preview-body');
+    if (previewEl) {
+      previewEl.innerHTML = msgText.replace(/\n/g,'<br>').replace(/\*(.*?)\*/g,'<strong>$1</strong>');
+    }
+
+    var payload = {
+      text: 'VeloPolicy Weekly Brief',
+      blocks: [
+        { type:'header', text:{ type:'plain_text', text:'VeloPolicy Weekly Brief', emoji:true } },
+        { type:'section', text:{ type:'mrkdwn', text:msgText } },
+        { type:'divider' },
+      ],
+    };
+
+    if (highPri.length > 0) {
+      payload.blocks.push({
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: '*High-Priority Bills*\n\n' + highPri.slice(0,4).map(function(b){
+            return '- *' + b.id + '* - ' + b.title.substring(0,50) + (b.title.length>50?'...':'') + ' _(' + STATUS_LABELS[b.s] + ')_';
+          }).join('\n'),
+        },
+      });
+      payload.blocks.push({ type:'divider' });
+    }
+
+    var showCount = document.getElementById('sl-count') && document.getElementById('sl-count').checked;
+    if (showCount && bills.length > 0) {
+      payload.blocks.push({
+        type:'section',
+        fields:[
+          { type:'mrkdwn', text:'*Tracked Bills*\n' + bills.length },
+          { type:'mrkdwn', text:'*High Priority*\n' + highPri.length },
+          { type:'mrkdwn', text:'*In Committee*\n' + bills.filter(function(b){return b.s==='committee';}).length },
+          { type:'mrkdwn', text:'*Floor Vote*\n'   + bills.filter(function(b){return b.s==='floor';}).length },
+        ],
+      });
+    }
+
+    payload.blocks.push({
+      type:'context',
+      elements:[{ type:'mrkdwn', text:'Generated by VeloPolicy - Powered by Claude - ' + new Date().toLocaleDateString() }],
+    });
+
+    await callSlack(payload);
+    setSbDot('sb-slack', 'ok');
+
+    var entry   = { icon:'msg', d:'Brief - ' + new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'}), t:new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}), s:'ok' };
+    var history = JSON.parse(localStorage.getItem('velopolicy_slack_history') || '[]');
+    history.unshift(entry);
+    localStorage.setItem('velopolicy_slack_history', JSON.stringify(history.slice(0,10)));
+
+    var histEl = document.getElementById('slack-history');
+    if (histEl) histEl.insertAdjacentHTML('afterbegin', '<div class="hist-item"><span class="hist-icon">msg</span><div class="hist-detail"><div style="font-size:12px;font-weight:500">' + entry.d + ' (AI-generated)</div><div class="hist-time">' + entry.t + '</div></div><span class="hist-status hs-ok">Sent</span></div>');
+
+    toast('Brief sent to Slack!', 'ok');
+
+  } catch (err) {
+    setSbDot('sb-slack', '');
+    toast('Slack send failed: ' + err.message, 'x');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = 'Send Now (Test)'; }
+  }
+}
+
+function saveSchedule() {
+  var days = Array.from(document.querySelectorAll('.sch-opt.on')).map(function(e){ return e.textContent; }).join(', ');
+  var time = (document.getElementById('slack-time') && document.getElementById('slack-time').value) || '8:00 AM';
+  if (!days) { toast('Select at least one send day', '!'); return; }
+  localStorage.setItem('velopolicy_schedule', JSON.stringify({ days:days, time:time }));
+  toast('Schedule saved - every ' + days + ' at ' + time, 'ok');
+}
+
+// ─────────────────────────────────────────────────────────────
+// AI ANALYSIS
+// ─────────────────────────────────────────────────────────────
+
+function buildAnalyzePage() {
+  const chipsEl = document.getElementById('analysis-chips');
+  if (!chipsEl) return;
+
+  chipsEl.innerHTML = ANALYSIS_CHIPS.map(function(c, i) {
+    return '<span class="stopic' + (i===0?' on':'') + '">' + c + '</span>';
+  }).join('');
+
+  chipsEl.querySelectorAll('.stopic').forEach(function(el) {
+    el.addEventListener('click', function() { el.classList.toggle('on'); });
+  });
+
+  var btn       = document.createElement('button');
+  btn.className = 'btn primary';
+  btn.style.marginLeft = 'auto';
+  btn.textContent = 'Analyze';
+  btn.addEventListener('click', runAnalysis);
+  chipsEl.appendChild(btn);
+
+  var copyBtn = document.getElementById('copy-result-btn');
+  if (copyBtn) copyBtn.addEventListener('click', function() {
+    var text = document.getElementById('result-area') && document.getElementById('result-area').innerText || '';
+    navigator.clipboard && navigator.clipboard.writeText(text).then(function() { toast('Copied to clipboard!', 'ok'); });
+  });
+}
+
+async function runAnalysis() {
+  const text = document.getElementById('bill-text') && document.getElementById('bill-text').value.trim();
+  if (!text) { toast('Enter bill text or a topic first', '!'); return; }
+
+  var chips = Array.from(document.querySelectorAll('#analysis-chips .stopic.on')).map(function(c){ return c.textContent; }).join(', ');
+  var ra    = document.getElementById('result-area');
+  var rc    = document.getElementById('result-card');
+  if (rc) rc.style.display = 'block';
+  if (ra) ra.innerHTML = '<div class="loading-row"><div class="spin"></div>Analyzing with Claude...</div>';
+  setSbDot('sb-api', 'busy');
+
+  var prompt = 'You are a policy analyst specializing in cycling, e-bikes, and micromobility legislation. Analyze the following and provide a structured brief.\n\nAnalysis focus areas: ' + (chips || 'Policy Summary') + '\n\nContent:\n' + text + '\n\nWrite each section under a ## header. Be specific and practical.\n## Policy Summary\n## Key Provisions\n## Stakeholder Impact\n## Equity Considerations\n## Advocacy Notes';
+
+  try {
+    const data = await callClaude({
+      max_tokens: 800,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    var raw = (data.content && data.content.find(function(c){ return c.type==='text'; }) || {}).text || 'No response.';
+
+    if (ra) {
+      ra.innerHTML = raw.split(/\n## /).map(function(s, i) {
+        if (i === 0 && !s.startsWith('#')) {
+          return s ? '<p style="margin-bottom:12px;font-size:13px;line-height:1.75">' + s.replace(/\n/g,'<br>') + '</p>' : '';
+        }
+        var parts = s.replace(/^## /,'').split('\n');
+        var title = parts[0];
+        var body  = parts.slice(1).join('\n').trim()
+          .replace(/\n[*-] /g,'<br>- ')
+          .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+          .replace(/\*(.*?)\*/g,'<em>$1</em>')
+          .replace(/\n/g,'<br>');
+        return '<div style="margin-bottom:20px"><div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--green);margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--green-pale)">' + title + '</div><div style="font-size:13px;line-height:1.78;color:var(--text)">' + body + '</div></div>';
+      }).join('');
+    }
+    setSbDot('sb-api', 'ok');
+
+  } catch (err) {
+    if (ra) ra.innerHTML = '<div style="color:var(--red);font-size:13px;line-height:1.6">Analysis failed: ' + err.message + '<br><small style="color:var(--muted)">Check that ANTHROPIC_API_KEY is set in Netlify environment variables.</small></div>';
+    setSbDot('sb-api', '');
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// UTILITIES
+// ─────────────────────────────────────────────────────────────
+
+function escId(id) {
+  return (id || '').replace(/['"\\<>&]/g, '_');
+}
+
+</script>
 </body>
 </html>
