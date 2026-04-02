@@ -4,6 +4,16 @@
 
 [functions]
   directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+[functions."claude"]
+  timeout = 26
+
+[functions."slack"]
+  timeout = 10
+
+[functions."weekly-send"]
+  timeout = 26
 
 [[redirects]]
   from = "/api/*"
