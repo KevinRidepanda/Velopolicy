@@ -1,29 +1,10 @@
 // public/js/data.js
-// Bills are now stored in localStorage and managed through the dashboard.
-// BILLS starts empty — you add real bills via Live Search.
+// All static data and constants used by app.js and charts.js.
+// The BILLS array starts empty — bills are loaded from localStorage by app.js.
 
-// Load tracked bills from localStorage, or start with empty array
-function loadTrackedBills() {
-  try {
-    const stored = localStorage.getItem('velopolicy_bills');
-    return stored ? JSON.parse(stored) : [];
-  } catch(e) {
-    return [];
-  }
-}
+// ── Status ────────────────────────────────────────────────────
 
-function saveTrackedBills(bills) {
-  try {
-    localStorage.setItem('velopolicy_bills', JSON.stringify(bills));
-  } catch(e) {
-    console.error('Could not save bills:', e);
-  }
-}
-
-// This is the live bill list — replaces the hardcoded BILLS array
-let BILLS = loadTrackedBills();
-
-const STATUS_LABELS = {
+var STATUS_LABELS = {
   intro:     'Introduced',
   committee: 'In Committee',
   floor:     'Floor Vote',
@@ -32,24 +13,41 @@ const STATUS_LABELS = {
   failed:    'Failed',
 };
 
-const STATUS_OPTIONS = ['intro','committee','floor','passed','enacted','failed'];
+// Used by manage list and detail modal dropdowns
+var STATUS_OPTIONS = ['intro', 'committee', 'floor', 'passed', 'enacted', 'failed'];
 
-const TOPICS = [
-  { icon:'⚡', title:'E-Bike Incentives',  desc:'Tax credits, rebates, and purchase incentive programs.',   n:'' },
-  { icon:'🛣',  title:'Infrastructure',     desc:'Protected lanes, intersections, and network funding.',     n:'' },
-  { icon:'⚖️', title:'Safety & Liability', desc:'Helmet laws, age limits, and operator liability.',         n:'' },
-  { icon:'🚧', title:'Parking & Zoning',   desc:'Fleet docking, sidewalk bans, and permit frameworks.',     n:'' },
-  { icon:'📡', title:'Data & Privacy',     desc:'GPS tracking, data minimization, and privacy rules.',      n:'' },
-  { icon:'🌍', title:'International',      desc:'EU, UK, Canada, and global policy developments.',          n:'' },
+// ── Topics ────────────────────────────────────────────────────
+
+var TOPICS = [
+  { icon:'⚡', title:'E-Bike Incentives',  desc:'Tax credits, rebates, and purchase incentive programs.'       },
+  { icon:'🛣',  title:'Infrastructure',     desc:'Protected lanes, intersections, and network funding.'         },
+  { icon:'⚖️', title:'Safety & Liability', desc:'Helmet laws, age limits, and operator liability frameworks.'  },
+  { icon:'🚧', title:'Parking & Zoning',   desc:'Fleet docking, sidewalk bans, and permit frameworks.'         },
+  { icon:'📡', title:'Data & Privacy',     desc:'GPS tracking, data minimization, and privacy standards.'      },
+  { icon:'🌍', title:'International',      desc:'EU, UK, Canada, and global micromobility policy.'             },
 ];
 
-const DEVELOPMENTS = [
-  { d:'This week', title:'Add your first bill',          body:'Use Live Search to find real legislation and click + Track to add it here.' },
-  { d:'Getting started', title:'Search for any topic',  body:'Try searching "e-bike tax credit 2026" or "protected bike lane" to find current bills.' },
-  { d:'Tip', title:'Update bill status as it changes',  body:'Click any bill in the tracker to update its status, priority, and notes.' },
+// Used by PDF export topic filter chips
+var TOPIC_OPTIONS = [
+  'E-Bike Incentives',
+  'Infrastructure',
+  'Safety & Liability',
+  'Parking & Zoning',
+  'Data & Privacy',
+  'International',
 ];
 
-const SEARCH_TOPICS = [
+// ── Default developments (shown before bills are tracked) ─────
+
+var DEVELOPMENTS = [
+  { d:'Get started', title:'Search for real legislation',       body:'Use Live Search to find actual bills and click + Track Bill to add them here.' },
+  { d:'Tip',         title:'Update status as bills advance',    body:'Open any bill from the tracker or watchlist to change its status and priority.' },
+  { d:'Tip',         title:'Set up Slack to get weekly briefs', body:'Configure the Slack Automation page to receive an AI-generated brief every Monday.' },
+];
+
+// ── Search topics (quick-pick chips on Live Search page) ──────
+
+var SEARCH_TOPICS = [
   'E-bike tax credit 2026',
   'Protected bike lanes legislation',
   'E-scooter regulations 2026',
@@ -62,18 +60,51 @@ const SEARCH_TOPICS = [
   'Cycling infrastructure federal',
 ];
 
-const MONITORS = [];
+// ── Slack history (shown before any real sends) ───────────────
+// Once real sends happen they are stored in localStorage and prepended to this.
 
-const SLACK_HISTORY = [];
+var SLACK_HISTORY = [];
 
-const EXPORT_OPTIONS = [
-  { id:'weekly',  icon:'📋', title:'Weekly Brief',      desc:'Full digest with key developments, topic breakdown, and watchlist.' },
-  { id:'tracker', icon:'📊', title:'Full Bill Tracker',  desc:'All your tracked bills with statuses and jurisdictions.' },
-  { id:'topic',   icon:'📁', title:'Topic Brief',        desc:'Deep-dive on a single policy area.' },
-  { id:'highpri', icon:'🔴', title:'High Priority Only', desc:'Just your high-priority bills with full detail.' },
-  { id:'custom',  icon:'✏️', title:'Custom Selection',   desc:'Pick specific bills, topics, and sections.' },
+// ── Export options ────────────────────────────────────────────
+
+var EXPORT_OPTIONS = [
+  { id:'weekly',  icon:'📋', title:'Weekly Brief',      desc:'Full digest with key developments, topic breakdown, and watchlist.'   },
+  { id:'tracker', icon:'📊', title:'Full Bill Tracker',  desc:'All your tracked bills with statuses and jurisdictions.'             },
+  { id:'topic',   icon:'📁', title:'Topic Brief',        desc:'Deep-dive on a single policy area.'                                  },
+  { id:'highpri', icon:'🔴', title:'High Priority Only', desc:'Just your high-priority bills with full detail on each.'             },
+  { id:'custom',  icon:'✏️', title:'Custom Selection',   desc:'Pick specific bills, topics, and sections to include.'               },
 ];
 
+var EXPORT_SECTIONS = [
+  { id:'cb-summary',      label:'Executive Summary',    def:true  },
+  { id:'cb-developments', label:'Key Developments',     def:true  },
+  { id:'cb-table',        label:'Legislation Table',    def:true  },
+  { id:'cb-highpri',      label:'High Priority Detail', def:false },
+  { id:'cb-stats',        label:'Statistics Summary',   def:false },
+];
+
+// ── Analysis chips ────────────────────────────────────────────
+
+var ANALYSIS_CHIPS = [
+  'Policy Summary',
+  'Stakeholder Impact',
+  'Equity Analysis',
+  'Advocacy Angle',
+  'Comparison to Law',
+  'International Context',
+];
+
+// ── Page metadata (topbar titles and subtitles) ───────────────
+
+var PAGE_META = {
+  dashboard:   { title:'Dashboard',          sub:'Your tracked micromobility legislation'     },
+  brief:       { title:'Weekly Brief',        sub:'AI-generated policy digest'                },
+  search:      { title:'Live Web Search',     sub:'Find and track real legislation'           },
+  legislation: { title:'Bill Tracker',        sub:'All your tracked bills'                    },
+  export:      { title:'PDF Export',          sub:'Generate formatted policy reports'         },
+  slack:       { title:'Slack Automation',    sub:'Automated weekly brief delivery'           },
+  analyze:     { title:'AI Policy Analysis',  sub:'Powered by Claude'                         },
+};
 const EXPORT_SECTIONS = [
   { id:'cb-summary',      label:'Executive Summary',    def:true  },
   { id:'cb-developments', label:'Key Developments',     def:true  },
