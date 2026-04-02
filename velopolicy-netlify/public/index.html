@@ -26,15 +26,15 @@
     </div>
     <nav class="nav">
       <div class="ns">Overview</div>
-      <div class="ni active" data-page="dashboard"><span class="ic">◈</span>Dashboard</div>
-      <div class="ni" data-page="brief"><span class="ic">📋</span>Weekly Brief<span class="nbadge g">New</span></div>
+      <div class="ni active" data-page="dashboard" onclick="nav('dashboard')"><span class="ic">◈</span>Dashboard</div>
+      <div class="ni" data-page="brief" onclick="nav('brief')"><span class="ic">📋</span>Weekly Brief<span class="nbadge g">New</span></div>
       <div class="ns">Live Tracking</div>
-      <div class="ni" data-page="search"><span class="ic">🔍</span>Live Search<span class="nbadge b">Web</span></div>
-      <div class="ni" data-page="legislation"><span class="ic">📜</span>Bill Tracker<span class="nbadge r">24</span></div>
+      <div class="ni" data-page="search" onclick="nav('search')"><span class="ic">🔍</span>Live Search<span class="nbadge b">Web</span></div>
+      <div class="ni" data-page="legislation" onclick="nav('legislation')"><span class="ic">📜</span>Bill Tracker<span class="nbadge r">24</span></div>
       <div class="ns">Reports &amp; Integrations</div>
-      <div class="ni" data-page="export"><span class="ic">📄</span>PDF Export</div>
-      <div class="ni" data-page="slack"><span class="ic">💬</span>Slack Automation</div>
-      <div class="ni" data-page="analyze"><span class="ic">🔬</span>AI Analysis</div>
+      <div class="ni" data-page="export" onclick="nav('export')"><span class="ic">📄</span>PDF Export</div>
+      <div class="ni" data-page="slack" onclick="nav('slack')"><span class="ic">💬</span>Slack Automation</div>
+      <div class="ni" data-page="analyze" onclick="nav('analyze')"><span class="ic">🔬</span>AI Analysis</div>
     </nav>
     <div class="sf">
       <div>Week of Mar 31 – Apr 6, 2026</div>
@@ -60,7 +60,7 @@
             <div style="font-size:48px;margin-bottom:16px">🔍</div>
             <div style="font-size:18px;font-weight:600;color:var(--text);margin-bottom:8px">No bills tracked yet</div>
             <div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.7;max-width:380px;margin-left:auto;margin-right:auto">Use <strong>Live Search</strong> to find real legislation, then click <strong>+ Track Bill</strong> to add it to your dashboard.</div>
-            <button class="btn primary" data-goto="search" style="font-size:13px;padding:10px 24px">🔍 Search for Legislation</button>
+            <button class="btn primary" data-goto="search" style="font-size:13px;padding:10px 24px" onclick="nav('search')">🔍 Search for Legislation</button>
           </div>
         </div>
       </div>
@@ -107,11 +107,11 @@
         </div>
       </div>
       <div class="card">
-        <div class="ch"><span class="ct">High-Priority Watchlist</span><button class="btn secondary sm" data-goto="legislation">Full tracker →</button></div>
+        <div class="ch"><span class="ct">High-Priority Watchlist</span><button class="btn secondary sm" data-goto="legislation" onclick="nav('legislation')">Full tracker →</button></div>
         <div class="cb p0" id="watchlist"></div>
       </div>
       <div class="card">
-        <div class="ch"><span class="ct">Manage Tracked Bills</span><button class="btn sm" data-goto="search">+ Find More Bills</button></div>
+        <div class="ch"><span class="ct">Manage Tracked Bills</span><button class="btn sm" data-goto="search" onclick="nav('search')">+ Find More Bills</button></div>
         <div class="cb p0" id="manage-bills-list"></div>
       </div>
       </div><!-- /dashboard-content -->
@@ -134,7 +134,7 @@
         <div class="ch">
           <span class="ct">Key Developments</span>
           <div style="display:flex;gap:8px">
-            <button class="btn sm" data-goto="export">📄 Export PDF</button>
+            <button class="btn sm" data-goto="export" onclick="nav('export')">📄 Export PDF</button>
             <button class="btn slack sm" id="brief-slack-btn">💬 Push to Slack</button>
           </div>
         </div>
@@ -147,7 +147,7 @@
       <div class="search-panel">
         <div class="search-row">
           <input class="search-input" id="search-q" placeholder="Search live web for micromobility legislation... e.g. 'e-bike tax credit 2026 congress'">
-          <button class="btn primary" id="search-btn">🔍 Search Web</button>
+          <button class="btn primary" id="search-btn" onclick="doSearch()">🔍 Search Web</button>
         </div>
         <div class="label-sm" style="margin-bottom:8px">Quick topics</div>
         <div id="search-topics" class="search-tags"></div>
@@ -159,7 +159,7 @@
         </div>
       </div>
       <div class="card">
-        <div class="ch"><span class="ct">Saved Search Monitors</span><button class="btn sm" id="add-monitor-btn">+ Add Monitor</button></div>
+        <div class="ch"><span class="ct">Saved Search Monitors</span><button class="btn sm" id="add-monitor-btn" onclick="saveMonitor(document.getElementById('search-q').value.trim())">+ Add Monitor</button></div>
         <div class="cb p0" id="monitor-list"></div>
       </div>
     </div>
@@ -245,8 +245,8 @@
       </div>
 
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        <button class="btn primary" id="generate-pdf-btn" style="font-size:13px;padding:10px 22px">⬇ Generate &amp; Download</button>
-        <button class="btn sm" data-goto="slack">💬 Send via Slack after export</button>
+        <button class="btn primary" id="generate-pdf-btn" style="font-size:13px;padding:10px 22px" onclick="generatePDF()">⬇ Generate &amp; Download</button>
+        <button class="btn sm" data-goto="slack" onclick="nav('slack')">💬 Send via Slack after export</button>
         <span id="pdf-status" style="font-size:12px;color:var(--muted)"></span>
       </div>
     </div>
@@ -282,8 +282,8 @@
             <div class="cb" style="display:flex;flex-direction:column;gap:7px" id="slack-content-checks"></div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn slack" id="slack-send-now" style="font-size:13px;padding:10px 18px">💬 Send Now (Test)</button>
-            <button class="btn primary" id="slack-save-schedule" style="font-size:13px;padding:10px 18px">✓ Save Schedule</button>
+            <button class="btn slack" id="slack-send-now" style="font-size:13px;padding:10px 18px" onclick="sendSlackNow()">💬 Send Now (Test)</button>
+            <button class="btn primary" id="slack-save-schedule" style="font-size:13px;padding:10px 18px" onclick="saveSchedule()">✓ Save Schedule</button>
           </div>
         </div>
         <div>
@@ -328,7 +328,7 @@
           <span class="ct">AI Analysis</span>
           <div style="display:flex;gap:6px">
             <button class="btn sm" id="copy-result-btn">Copy</button>
-            <button class="btn sm" data-goto="export">Export PDF</button>
+            <button class="btn sm" data-goto="export" onclick="nav('export')">Export PDF</button>
           </div>
         </div>
         <div class="cb" id="result-area" style="font-size:13px;line-height:1.75;color:var(--text)"></div>
