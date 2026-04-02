@@ -1,9 +1,5 @@
 [build]
   publish = "public"
-  command = "echo 'No build step needed'"
-
-[functions]
-  directory = "netlify/functions"
 
 [[redirects]]
   from = "/api/*"
