@@ -48,22 +48,59 @@
 
     <!-- DASHBOARD -->
     <div id="page-dashboard" class="page active">
-      <div class="mrow">
-        <div class="mc"><div class="ml">Active Bills</div><div class="mv">142</div><div class="md up">↑ 11 this week</div></div>
-        <div class="mc"><div class="ml">Enacted YTD</div><div class="mv">18</div><div class="md up">↑ 3 vs last year</div></div>
-        <div class="mc"><div class="ml">Search Monitors</div><div class="mv">7</div><div class="md muted">Active alerts</div></div>
-        <div class="mc"><div class="ml">Slack Pushes</div><div class="mv">12</div><div class="md up">Sent this month</div></div>
+  <div class="mrow" id="metric-cards">
+    <div class="mc"><div class="ml">Tracked Bills</div><div class="mv" id="m-total">0</div><div class="md muted">In your tracker</div></div>
+    <div class="mc"><div class="ml">High Priority</div><div class="mv" id="m-high">0</div><div class="md" style="color:#e74c3c">Needs attention</div></div>
+    <div class="mc"><div class="ml">In Committee</div><div class="mv" id="m-committee">0</div><div class="md muted">Active now</div></div>
+    <div class="mc"><div class="ml">Enacted YTD</div><div class="mv" id="m-enacted">0</div><div class="md up">Signed into law</div></div>
+  </div>
+
+  <!-- Empty state shown when no bills tracked yet -->
+  <div id="empty-state" style="display:none">
+    <div class="card">
+      <div class="cb" style="text-align:center;padding:48px 24px">
+        <div style="font-size:48px;margin-bottom:16px">🔍</div>
+        <div style="font-size:18px;font-weight:600;color:var(--text);margin-bottom:8px">No bills tracked yet</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.7;max-width:380px;margin-left:auto;margin-right:auto">
+          Search for real legislation using Live Search, then click <strong>+ Track</strong> to add bills to your dashboard.
+        </div>
+        <button class="btn primary" data-goto="search" style="font-size:13px;padding:10px 24px">
+          🔍 Search for Legislation
+        </button>
       </div>
-      <div class="g2">
-        <div class="card"><div class="ch"><span class="ct">Bill Status Distribution</span></div><div class="cb"><div class="cw"><canvas id="statusChart"></canvas></div></div></div>
-        <div class="card"><div class="ch"><span class="ct">Legislative Activity — 12 Weeks</span></div><div class="cb"><div class="cw"><canvas id="activityChart"></canvas></div></div></div>
+    </div>
+  </div>
+
+  <!-- Content shown when bills exist -->
+  <div id="dashboard-content">
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><span class="ct">Bill Status Distribution</span></div>
+        <div class="cb"><div class="cw"><canvas id="statusChart"></canvas></div></div>
       </div>
       <div class="card">
-        <div class="ch"><span class="ct">High-Priority Watchlist</span><button class="btn secondary sm" data-goto="legislation">Full tracker →</button></div>
-        <div class="cb p0" id="watchlist"></div>
+        <div class="ch"><span class="ct">Bills by Topic</span></div>
+        <div class="cb"><div class="cw"><canvas id="topicChart"></canvas></div></div>
       </div>
     </div>
 
+    <div class="card">
+      <div class="ch">
+        <span class="ct">High-Priority Watchlist</span>
+        <button class="btn secondary sm" data-goto="legislation">Full tracker →</button>
+      </div>
+      <div class="cb p0" id="watchlist"></div>
+    </div>
+
+    <div class="card">
+      <div class="ch">
+        <span class="ct">Manage Tracked Bills</span>
+        <button class="btn sm" data-goto="search">+ Find More Bills</button>
+      </div>
+      <div class="cb p0" id="manage-bills-list"></div>
+    </div>
+  </div>
+</div>
     <!-- WEEKLY BRIEF -->
     <div id="page-brief" class="page">
       <div class="brief-hero">
