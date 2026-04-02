@@ -1,79 +1,110 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VeloPolicy — Micromobility Policy Intelligence</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚲</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/styles/app.css">
-</head>
-<body>
+// public/js/data.js
+// All static data and constants used by app.js and charts.js.
+// The BILLS array starts empty — bills are loaded from localStorage by app.js.
 
-<div class="shell">
+// ── Status ────────────────────────────────────────────────────
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="logo">
-      <div class="logo-row">
-        <div class="logo-icon">🚲</div>
-        <div>
-          <div class="logo-title">VeloPolicy</div>
-          <div class="logo-sub">Micromobility Intel</div>
-        </div>
-      </div>
-    </div>
-    <nav class="nav">
-      <div class="ns">Overview</div>
-      <div class="ni active" data-page="dashboard"><span class="ic">◈</span>Dashboard</div>
-      <div class="ni" data-page="brief"><span class="ic">📋</span>Weekly Brief<span class="nbadge g">New</span></div>
-      <div class="ns">Live Tracking</div>
-      <div class="ni" data-page="search"><span class="ic">🔍</span>Live Search<span class="nbadge b">Web</span></div>
-      <div class="ni" data-page="legislation"><span class="ic">📜</span>Bill Tracker<span class="nbadge r">24</span></div>
-      <div class="ns">Reports &amp; Integrations</div>
-      <div class="ni" data-page="export"><span class="ic">📄</span>PDF Export</div>
-      <div class="ni" data-page="slack"><span class="ic">💬</span>Slack Automation</div>
-      <div class="ni" data-page="analyze"><span class="ic">🔬</span>AI Analysis</div>
-    </nav>
-    <div class="sf">
-      <div>Week of Mar 31 – Apr 6, 2026</div>
-      <div class="sf-week">Last synced 2h ago<span class="pulse-dot"></span></div>
-    </div>
-  </aside>
+const STATUS_LABELS = {
+  intro:     'Introduced',
+  committee: 'In Committee',
+  floor:     'Floor Vote',
+  passed:    'Passed',
+  enacted:   'Enacted',
+  failed:    'Failed',
+};
 
-  <!-- MAIN -->
-  <div class="main">
-    <div id="topbar"></div>
+// Used by manage list and detail modal dropdowns
+const STATUS_OPTIONS = ['intro', 'committee', 'floor', 'passed', 'enacted', 'failed'];
 
-    <!-- DASHBOARD -->
-    <div id="page-dashboard" class="page active">
-  <div class="mrow" id="metric-cards">
-    <div class="mc"><div class="ml">Tracked Bills</div><div class="mv" id="m-total">0</div><div class="md muted">In your tracker</div></div>
-    <div class="mc"><div class="ml">High Priority</div><div class="mv" id="m-high">0</div><div class="md" style="color:#e74c3c">Needs attention</div></div>
-    <div class="mc"><div class="ml">In Committee</div><div class="mv" id="m-committee">0</div><div class="md muted">Active now</div></div>
-    <div class="mc"><div class="ml">Enacted YTD</div><div class="mv" id="m-enacted">0</div><div class="md up">Signed into law</div></div>
-  </div>
+// ── Topics ────────────────────────────────────────────────────
 
-  <!-- Empty state shown when no bills tracked yet -->
-  <div id="empty-state" style="display:none">
-    <div class="card">
-      <div class="cb" style="text-align:center;padding:48px 24px">
-        <div style="font-size:48px;margin-bottom:16px">🔍</div>
-        <div style="font-size:18px;font-weight:600;color:var(--text);margin-bottom:8px">No bills tracked yet</div>
-        <div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.7;max-width:380px;margin-left:auto;margin-right:auto">
-          Search for real legislation using Live Search, then click <strong>+ Track</strong> to add bills to your dashboard.
-        </div>
-        <button class="btn primary" data-goto="search" style="font-size:13px;padding:10px 24px">
-          🔍 Search for Legislation
-        </button>
-      </div>
-    </div>
-  </div>
+const TOPICS = [
+  { icon:'⚡', title:'E-Bike Incentives',  desc:'Tax credits, rebates, and purchase incentive programs.'       },
+  { icon:'🛣',  title:'Infrastructure',     desc:'Protected lanes, intersections, and network funding.'         },
+  { icon:'⚖️', title:'Safety & Liability', desc:'Helmet laws, age limits, and operator liability frameworks.'  },
+  { icon:'🚧', title:'Parking & Zoning',   desc:'Fleet docking, sidewalk bans, and permit frameworks.'         },
+  { icon:'📡', title:'Data & Privacy',     desc:'GPS tracking, data minimization, and privacy standards.'      },
+  { icon:'🌍', title:'International',      desc:'EU, UK, Canada, and global micromobility policy.'             },
+];
 
-  <!-- Content shown when bills exist -->
-  <div id="dashboard-content">
-    <div class="g2">
+// Used by PDF export topic filter chips
+const TOPIC_OPTIONS = [
+  'E-Bike Incentives',
+  'Infrastructure',
+  'Safety & Liability',
+  'Parking & Zoning',
+  'Data & Privacy',
+  'International',
+];
+
+// ── Default developments (shown before bills are tracked) ─────
+
+const DEVELOPMENTS = [
+  { d:'Get started', title:'Search for real legislation',       body:'Use Live Search to find actual bills and click + Track Bill to add them here.' },
+  { d:'Tip',         title:'Update status as bills advance',    body:'Open any bill from the tracker or watchlist to change its status and priority.' },
+  { d:'Tip',         title:'Set up Slack to get weekly briefs', body:'Configure the Slack Automation page to receive an AI-generated brief every Monday.' },
+];
+
+// ── Search topics (quick-pick chips on Live Search page) ──────
+
+const SEARCH_TOPICS = [
+  'E-bike tax credit 2026',
+  'Protected bike lanes legislation',
+  'E-scooter regulations 2026',
+  'Micromobility safety bill',
+  'Cargo bike policy',
+  'EU cycling directive 2026',
+  'Bike infrastructure funding',
+  'Speed pedelec law',
+  'Shared scooter permit',
+  'Cycling infrastructure federal',
+];
+
+// ── Slack history (shown before any real sends) ───────────────
+// Once real sends happen they are stored in localStorage and prepended to this.
+
+const SLACK_HISTORY = [];
+
+// ── Export options ────────────────────────────────────────────
+
+const EXPORT_OPTIONS = [
+  { id:'weekly',  icon:'📋', title:'Weekly Brief',      desc:'Full digest with key developments, topic breakdown, and watchlist.'   },
+  { id:'tracker', icon:'📊', title:'Full Bill Tracker',  desc:'All your tracked bills with statuses and jurisdictions.'             },
+  { id:'topic',   icon:'📁', title:'Topic Brief',        desc:'Deep-dive on a single policy area.'                                  },
+  { id:'highpri', icon:'🔴', title:'High Priority Only', desc:'Just your high-priority bills with full detail on each.'             },
+  { id:'custom',  icon:'✏️', title:'Custom Selection',   desc:'Pick specific bills, topics, and sections to include.'               },
+];
+
+const EXPORT_SECTIONS = [
+  { id:'cb-summary',      label:'Executive Summary',    def:true  },
+  { id:'cb-developments', label:'Key Developments',     def:true  },
+  { id:'cb-table',        label:'Legislation Table',    def:true  },
+  { id:'cb-highpri',      label:'High Priority Detail', def:false },
+  { id:'cb-stats',        label:'Statistics Summary',   def:false },
+];
+
+// ── Analysis chips ────────────────────────────────────────────
+
+const ANALYSIS_CHIPS = [
+  'Policy Summary',
+  'Stakeholder Impact',
+  'Equity Analysis',
+  'Advocacy Angle',
+  'Comparison to Law',
+  'International Context',
+];
+
+// ── Page metadata (topbar titles and subtitles) ───────────────
+
+const PAGE_META = {
+  dashboard:   { title:'Dashboard',          sub:'Your tracked micromobility legislation'     },
+  brief:       { title:'Weekly Brief',        sub:'AI-generated policy digest'                },
+  search:      { title:'Live Web Search',     sub:'Find and track real legislation'           },
+  legislation: { title:'Bill Tracker',        sub:'All your tracked bills'                    },
+  export:      { title:'PDF Export',          sub:'Generate formatted policy reports'         },
+  slack:       { title:'Slack Automation',    sub:'Automated weekly brief delivery'           },
+  analyze:     { title:'AI Policy Analysis',  sub:'Powered by Claude'                         },
+};    <div class="g2">
       <div class="card">
         <div class="ch"><span class="ct">Bill Status Distribution</span></div>
         <div class="cb"><div class="cw"><canvas id="statusChart"></canvas></div></div>
