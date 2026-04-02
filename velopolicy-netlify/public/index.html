@@ -274,7 +274,7 @@ textarea:focus { outline: none; border-color: var(--green-light); box-shadow: 0 
       <div class="ni" data-page="brief" onclick="nav('brief')"><span class="ic">📋</span>Weekly Brief<span class="nbadge g">New</span></div>
       <div class="ns">Live Tracking</div>
       <div class="ni" data-page="search" onclick="nav('search')"><span class="ic">🔍</span>Live Search<span class="nbadge b">Web</span></div>
-      <div class="ni" data-page="legislation" onclick="nav('legislation')"><span class="ic">📜</span>Bill Tracker<span class="nbadge r">0</span></div>
+      <div class="ni" data-page="legislation" onclick="nav('legislation')"><span class="ic">📜</span>Bill Tracker<span class="nbadge r" id="bill-count-badge">0</span></div>
       <div class="ns">Reports &amp; Integrations</div>
       <div class="ni" data-page="export" onclick="nav('export')"><span class="ic">📄</span>PDF Export</div>
       <div class="ni" data-page="slack" onclick="nav('slack')"><span class="ic">💬</span>Slack Automation</div>
@@ -282,7 +282,7 @@ textarea:focus { outline: none; border-color: var(--green-light); box-shadow: 0 
     </nav>
     <div class="sf">
       <div>VeloPolicy v2.0</div>
-      <div class="sf-week">Bills tracked from live search<span class="pulse-dot"></span></div>
+      <div class="sf-week">Live bill tracking<span class="pulse-dot"></span></div>
     </div>
   </aside>
 
@@ -329,9 +329,9 @@ textarea:focus { outline: none; border-color: var(--green-light); box-shadow: 0 
     <!-- WEEKLY BRIEF -->
     <div id="page-brief" class="page">
       <div class="brief-hero">
-        <div class="bh-date" id="brief-date">Your weekly micromobility policy digest</div>
-        <div class="bh-title" id="brief-title">Track bills to generate your brief</div>
-        <div class="bh-desc" id="brief-desc">Use Live Search to find and track real legislation. Your weekly brief will reflect your tracked bills and update automatically.</div>
+        <div class="bh-date">Your weekly micromobility policy digest</div>
+        <div class="bh-title">Track bills via Live Search to populate your brief</div>
+        <div class="bh-desc">Add real bills from Live Search. Your brief will reflect your tracked legislation and update automatically each week.</div>
         <div class="bh-pills" id="brief-pills"></div>
       </div>
       <div class="tg" id="topic-grid"></div>
@@ -340,7 +340,7 @@ textarea:focus { outline: none; border-color: var(--green-light); box-shadow: 0 
           <span class="ct">Recent Developments</span>
           <div style="display:flex;gap:8px">
             <button class="btn sm" onclick="nav('export')">📄 Export PDF</button>
-            <button class="btn slack sm" id="brief-slack-btn" onclick="nav('slack')">💬 Push to Slack</button>
+            <button class="btn slack sm" onclick="nav('slack')">💬 Push to Slack</button>
           </div>
         </div>
         <div class="cb p0" id="key-developments"></div>
@@ -351,7 +351,7 @@ textarea:focus { outline: none; border-color: var(--green-light); box-shadow: 0 
     <div id="page-search" class="page">
       <div class="search-panel">
         <div class="search-row">
-          <input class="search-input" id="search-q" placeholder="Search live web for micromobility legislation... e.g. 'e-bike tax credit 2026 congress'" onkeydown="if(event.key==='Enter')doSearch()">
+          <input class="search-input" id="search-q" placeholder="Search live web for micromobility legislation... e.g. 'e-bike tax credit 2026'" onkeydown="if(event.key==='Enter')doSearch()">
           <button class="btn primary" id="search-btn" onclick="doSearch()">🔍 Search Web</button>
         </div>
         <div class="label-sm" style="margin-bottom:8px">Quick topics</div>
@@ -360,7 +360,7 @@ textarea:focus { outline: none; border-color: var(--green-light); box-shadow: 0 
       <div class="card">
         <div class="ch"><span class="ct" id="search-status-label">Enter a query to search live legislation feeds</span><div id="search-hdr-actions"></div></div>
         <div id="search-results" class="cb">
-          <div class="empty-state">🌐<br>Live web search powered by Claude.<br>Type a query or click a quick topic above.</div>
+          <div class="empty-state">🌐<br>Live web search powered by Claude.<br>Results take 15–25 seconds — Claude searches the real web.</div>
         </div>
       </div>
       <div class="card">
@@ -374,10 +374,7 @@ textarea:focus { outline: none; border-color: var(--green-light); box-shadow: 0 
       <div class="frow" id="leg-filters"></div>
       <div class="card" style="overflow:auto">
         <table class="lt">
-          <thead><tr>
-            <th style="width:14px"></th><th>Bill ID</th><th>Title</th><th>Topic</th>
-            <th>Scope</th><th>Jurisdiction</th><th>Status</th><th>Updated</th>
-          </tr></thead>
+          <thead><tr><th style="width:14px"></th><th>Bill ID</th><th>Title</th><th>Topic</th><th>Scope</th><th>Jurisdiction</th><th>Status</th><th>Updated</th></tr></thead>
           <tbody id="leg-body"></tbody>
         </table>
       </div>
@@ -425,10 +422,7 @@ textarea:focus { outline: none; border-color: var(--green-light); box-shadow: 0 
         <div class="ch"><span class="ct">Preview</span><span id="preview-bill-count" style="font-size:12px;color:var(--muted)">0 bills selected</span></div>
         <div class="cb" style="background:var(--surface)">
           <div class="preview-page">
-            <div class="preview-header">
-              <div class="preview-logo">🚲 VeloPolicy</div>
-              <div class="preview-week" id="preview-subtitle">Weekly Brief · 2026</div>
-            </div>
+            <div class="preview-header"><div class="preview-logo">🚲 VeloPolicy</div><div class="preview-week" id="preview-subtitle">Weekly Brief · 2026</div></div>
             <div class="preview-h1" id="preview-title">Weekly Policy Brief</div>
             <div class="preview-p" id="preview-desc">Select a report type above to update this preview.</div>
             <div id="preview-table-wrap"></div>
@@ -480,11 +474,7 @@ textarea:focus { outline: none; border-color: var(--green-light); box-shadow: 0 
             <div class="sp-workspace">🏢 YourWorkspace</div>
             <div class="sp-channel" id="slack-preview-channel">#micromobility-policy</div>
             <div class="sp-msg">
-              <div class="sp-bot">
-                <div class="sp-avatar">🚲</div>
-                <span class="sp-name" id="slack-preview-botname">VeloPolicy Bot</span>
-                <span class="sp-ts">Today at 8:00 AM</span>
-              </div>
+              <div class="sp-bot"><div class="sp-avatar">🚲</div><span class="sp-name" id="slack-preview-botname">VeloPolicy Bot</span><span class="sp-ts">Today at 8:00 AM</span></div>
               <div class="sp-body" id="slack-preview-body">Click "Send Now" to generate a live AI brief and preview it here.</div>
             </div>
           </div>
@@ -500,14 +490,14 @@ textarea:focus { outline: none; border-color: var(--green-light); box-shadow: 0 
     <div id="page-analyze" class="page">
       <div class="search-panel">
         <div class="label-sm" style="margin-bottom:8px">Paste bill text or describe a policy topic</div>
-        <textarea id="bill-text" rows="6" placeholder="Paste bill text, a URL summary, or describe a topic — e.g. 'federal e-bike tax credit implications for low-income riders'..."></textarea>
+        <textarea id="bill-text" rows="6" placeholder="Paste bill text or describe a topic — e.g. 'federal e-bike tax credit implications for low-income riders'..."></textarea>
         <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center" id="analysis-chips"></div>
       </div>
       <div class="card" id="result-card" style="display:none">
         <div class="ch">
           <span class="ct">AI Analysis</span>
           <div style="display:flex;gap:6px">
-            <button class="btn sm" id="copy-result-btn" onclick="navigator.clipboard&&navigator.clipboard.writeText(document.getElementById('result-area').innerText).then(function(){toast('Copied!','ok')})">Copy</button>
+            <button class="btn sm" onclick="navigator.clipboard&&navigator.clipboard.writeText(document.getElementById('result-area').innerText).then(function(){toast('Copied!','ok')})">Copy</button>
             <button class="btn sm" onclick="nav('export')">Export PDF</button>
           </div>
         </div>
@@ -523,8 +513,6 @@ textarea:focus { outline: none; border-color: var(--green-light); box-shadow: 0 
     </div>
   </div>
 </div>
-
-
 <script>
 var STATUS_LABELS={intro:'Introduced',committee:'In Committee',floor:'Floor Vote',passed:'Passed',enacted:'Enacted',failed:'Failed'};
 var STATUS_OPTIONS=['intro','committee','floor','passed','enacted','failed'];
@@ -1037,7 +1025,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <script>
 // public/js/app.js
 // VeloPolicy — complete application logic.
-// All API calls go to /api/claude and /api/slack (Netlify function proxies).
+// All API calls go to /.netlify/functions/claude and /.netlify/functions/slack (Netlify function proxies).
 // Bills are stored in localStorage and managed through the dashboard.
 
 // ─────────────────────────────────────────────────────────────
@@ -1047,7 +1035,7 @@ document.addEventListener('DOMContentLoaded', () => {
 var _searchBusy = false;
 
 async function callClaude(body) {
-  const res = await fetch('/api/claude', {
+  const res = await fetch('/.netlify/functions/claude', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -1062,7 +1050,7 @@ async function callClaude(body) {
 }
 
 async function callSlack(payload) {
-  const res = await fetch('/api/slack', {
+  const res = await fetch('/.netlify/functions/slack', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -1531,15 +1519,15 @@ async function doSearch() {
   const act = document.getElementById('search-hdr-actions');
 
   setSbDot('sb-search', 'busy');
-  if (sr)  sr.innerHTML    = '<div class="loading-row"><div class="spin"></div>Searching live web for legislation...</div>';
+  if (sr)  sr.innerHTML    = '<div class="loading-row"><div class="spin"></div>Searching live web — takes 15–25 seconds...</div>';
   if (lbl) lbl.textContent = 'Searching...';
   if (act) act.innerHTML   = '';
 
-  const prompt = 'You are a micromobility policy research assistant. Search the web for recent news, bills, and legislative developments about: "' + q + '".\n\nFocus on government websites, advocacy organizations, and reputable news sources.\n\nReturn ONLY a JSON array, no markdown:\n[{"title":"Full title","snippet":"2-3 sentence description","source":"Publication name","url":"full URL","date":"Month Year","type":"bill|news|report|agency","relevance":"high|medium","jurisdiction":"state or body","billId":"bill number or empty string"}]\n\nReturn 4-6 items. Prioritize actual bills.';
+  const prompt = 'Search the web for e-bike/micromobility/cycling legislation about: "' + q + '". Return ONLY a JSON array, no other text:\n[{"title":"...","snippet":"1-2 sentences","source":"...","url":"...","date":"...","type":"bill|news","relevance":"high|medium","jurisdiction":"...","billId":"bill ID or empty"}]\n3-5 results, prioritize real bills.';
 
   try {
     const data = await callClaude({
-      max_tokens: 1800,
+      max_tokens: 800,
       tools: [{ type: 'web_search_20250305', name: 'web_search' }],
       messages: [{ role: 'user', content: prompt }],
     });
@@ -2226,7 +2214,7 @@ async function runAnalysis() {
 
   try {
     const data = await callClaude({
-      max_tokens: 800,
+      max_tokens: 600,
       messages: [{ role: 'user', content: prompt }],
     });
 
