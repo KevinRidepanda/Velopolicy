@@ -1,22 +1,24 @@
 [build]
-  base = "velopolicy-netlify"
+  base    = "velopolicy-netlify"
   publish = "public"
+  command = "echo 'No build step needed'"
 
 [functions]
-  directory = "netlify/functions"
+  directory   = "netlify/functions"
   node_bundler = "esbuild"
 
+# Per-function timeouts (seconds) — max 26s on free tier
 [functions."claude"]
   timeout = 26
 
 [functions."slack"]
-  timeout = 10
+  timeout = 15
 
 [functions."weekly-send"]
   timeout = 26
 
 [[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
+  from   = "/api/*"
+  to     = "/.netlify/functions/:splat"
   status = 200
-  force = true
+  force  = true
