@@ -30,8 +30,6 @@ const TOPICS = [
   { icon:'🛣',  title:'Infrastructure',     desc:'CA, NY, WA push protected lane requirements for large cities.',  n:'5 bills'    },
   { icon:'⚖️', title:'Safety & Liability', desc:'Helmet laws, age limits, and liability frameworks debated.',     n:'4 bills'    },
   { icon:'🚧', title:'Parking & Zoning',   desc:'Shared-fleet docking, sidewalk bans, permit frameworks.',        n:'6 bills'    },
-  { icon:'📡', title:'Data & Privacy',     desc:'GPS tracking bills; GDPR-aligned standards proposed.',           n:'2 bills'    },
-  { icon:'🌍', title:'International',      desc:'EU Dir 2026/14 proposes unified limits and battery safety.',     n:'3 measures' },
 ];
 
 const DEVELOPMENTS = [
@@ -42,8 +40,8 @@ const DEVELOPMENTS = [
 
 const SEARCH_TOPICS = [
   'E-bike tax credit', 'Protected bike lanes', 'E-scooter regulations',
-  'Micromobility safety', 'Cargo bike policy', 'EU cycling directive',
-  'Bike infrastructure funding', 'Speed pedelec law',
+  'Micromobility safety', 'Cargo bike policy',
+  'Bike infrastructure funding', 'e-bike speed regulations',
 ];
 
 const MONITORS = [
@@ -55,23 +53,31 @@ const MONITORS = [
 const SLACK_HISTORY = [
   { icon:'💬', d:'Weekly Brief — Week of Mar 24', t:'Mar 31, 8:01 AM', s:'ok'   },
   { icon:'💬', d:'Weekly Brief — Week of Mar 17', t:'Mar 24, 8:00 AM', s:'ok'   },
-  { icon:'🔔', d:'Monitor alert: EU directive',   t:'Mar 22, 2:14 PM', s:'ok'   },
   { icon:'💬', d:'Weekly Brief — Week of Mar 10', t:'Mar 17, 8:00 AM', s:'fail' },
 ];
 
 const EXPORT_OPTIONS = [
-  { id:'weekly',  icon:'📋', title:'Weekly Brief',  desc:'Full digest with key developments and watchlist.' },
-  { id:'tracker', icon:'📊', title:'Bill Tracker',  desc:'Complete legislation table with all fields.'     },
-  { id:'topic',   icon:'📁', title:'Topic Brief',   desc:'Deep-dive on a single policy area.'              },
-  { id:'custom',  icon:'✏️', title:'Custom Report', desc:'Select specific bills and sections.'             },
+  { id:'weekly',  icon:'📋', title:'Weekly Brief',      desc:'Full digest with key developments, topic breakdown, and watchlist.' },
+  { id:'tracker', icon:'📊', title:'Full Bill Tracker',  desc:'Complete legislation table with all bills, statuses, and jurisdictions.' },
+  { id:'topic',   icon:'📁', title:'Topic Brief',        desc:'Deep-dive on a single policy area — incentives, infrastructure, safety, etc.' },
+  { id:'highpri', icon:'🔴', title:'High Priority Only', desc:'Just the high-priority bills with full detail on each.' },
+  { id:'custom',  icon:'✏️', title:'Custom Selection',   desc:'Pick specific bills, topics, and date ranges to include.' },
 ];
 
 const EXPORT_SECTIONS = [
-  { id:'cb-summary',      label:'Executive Summary',   def:true  },
-  { id:'cb-developments', label:'Key Developments',    def:true  },
-  { id:'cb-table',        label:'Legislation Table',   def:true  },
-  { id:'cb-topics',       label:'Topic Briefs',        def:false },
-  { id:'cb-stats',        label:'Charts & Statistics', def:false },
+  { id:'cb-summary',      label:'Executive Summary',    def:true  },
+  { id:'cb-developments', label:'Key Developments',     def:true  },
+  { id:'cb-table',        label:'Legislation Table',    def:true  },
+  { id:'cb-topics',       label:'Topic Briefs',         def:false },
+  { id:'cb-highpri',      label:'High Priority Detail', def:false },
+  { id:'cb-stats',        label:'Statistics Summary',   def:false },
+];
+
+const TOPIC_OPTIONS = [
+  'E-Bike Incentives',
+  'Infrastructure',
+  'Safety & Liability',
+  'Parking & Zoning',
 ];
 
 const ANALYSIS_CHIPS = [
