@@ -1,137 +1,122 @@
-// public/js/data.js
-// All static data and constants used by app.js and charts.js.
-// The BILLS array starts empty — bills are loaded from localStorage by app.js.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VeloPolicy — Micromobility Policy Intelligence</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚲</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles/app.css">
+</head>
+<body>
 
-// ── Status ────────────────────────────────────────────────────
+<div class="shell">
 
-const STATUS_LABELS = {
-  intro:     'Introduced',
-  committee: 'In Committee',
-  floor:     'Floor Vote',
-  passed:    'Passed',
-  enacted:   'Enacted',
-  failed:    'Failed',
-};
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-row">
+        <div class="logo-icon">🚲</div>
+        <div>
+          <div class="logo-title">VeloPolicy</div>
+          <div class="logo-sub">Micromobility Intel</div>
+        </div>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="ns">Overview</div>
+      <div class="ni active" data-page="dashboard"><span class="ic">◈</span>Dashboard</div>
+      <div class="ni" data-page="brief"><span class="ic">📋</span>Weekly Brief<span class="nbadge g">New</span></div>
+      <div class="ns">Live Tracking</div>
+      <div class="ni" data-page="search"><span class="ic">🔍</span>Live Search<span class="nbadge b">Web</span></div>
+      <div class="ni" data-page="legislation"><span class="ic">📜</span>Bill Tracker<span class="nbadge r">24</span></div>
+      <div class="ns">Reports &amp; Integrations</div>
+      <div class="ni" data-page="export"><span class="ic">📄</span>PDF Export</div>
+      <div class="ni" data-page="slack"><span class="ic">💬</span>Slack Automation</div>
+      <div class="ni" data-page="analyze"><span class="ic">🔬</span>AI Analysis</div>
+    </nav>
+    <div class="sf">
+      <div>Week of Mar 31 – Apr 6, 2026</div>
+      <div class="sf-week">Last synced 2h ago<span class="pulse-dot"></span></div>
+    </div>
+  </aside>
 
-// Used by manage list and detail modal dropdowns
-const STATUS_OPTIONS = ['intro', 'committee', 'floor', 'passed', 'enacted', 'failed'];
+  <!-- MAIN -->
+  <div class="main">
+    <div id="topbar"></div>
 
-// ── Topics ────────────────────────────────────────────────────
-
-const TOPICS = [
-  { icon:'⚡', title:'E-Bike Incentives',  desc:'Tax credits, rebates, and purchase incentive programs.'       },
-  { icon:'🛣',  title:'Infrastructure',     desc:'Protected lanes, intersections, and network funding.'         },
-  { icon:'⚖️', title:'Safety & Liability', desc:'Helmet laws, age limits, and operator liability frameworks.'  },
-  { icon:'🚧', title:'Parking & Zoning',   desc:'Fleet docking, sidewalk bans, and permit frameworks.'         },
-  { icon:'📡', title:'Data & Privacy',     desc:'GPS tracking, data minimization, and privacy standards.'      },
-  { icon:'🌍', title:'International',      desc:'EU, UK, Canada, and global micromobility policy.'             },
-];
-
-// Used by PDF export topic filter chips
-const TOPIC_OPTIONS = [
-  'E-Bike Incentives',
-  'Infrastructure',
-  'Safety & Liability',
-  'Parking & Zoning',
-  'Data & Privacy',
-  'International',
-];
-
-// ── Default developments (shown before bills are tracked) ─────
-
-const DEVELOPMENTS = [
-  { d:'Get started', title:'Search for real legislation',       body:'Use Live Search to find actual bills and click + Track Bill to add them here.' },
-  { d:'Tip',         title:'Update status as bills advance',    body:'Open any bill from the tracker or watchlist to change its status and priority.' },
-  { d:'Tip',         title:'Set up Slack to get weekly briefs', body:'Configure the Slack Automation page to receive an AI-generated brief every Monday.' },
-];
-
-// ── Search topics (quick-pick chips on Live Search page) ──────
-
-const SEARCH_TOPICS = [
-  'E-bike tax credit 2026',
-  'Protected bike lanes legislation',
-  'E-scooter regulations 2026',
-  'Micromobility safety bill',
-  'Cargo bike policy',
-  'EU cycling directive 2026',
-  'Bike infrastructure funding',
-  'Speed pedelec law',
-  'Shared scooter permit',
-  'Cycling infrastructure federal',
-];
-
-// ── Slack history (shown before any real sends) ───────────────
-// Once real sends happen they are stored in localStorage and prepended to this.
-
-const SLACK_HISTORY = [];
-
-// ── Export options ────────────────────────────────────────────
-
-const EXPORT_OPTIONS = [
-  { id:'weekly',  icon:'📋', title:'Weekly Brief',      desc:'Full digest with key developments, topic breakdown, and watchlist.'   },
-  { id:'tracker', icon:'📊', title:'Full Bill Tracker',  desc:'All your tracked bills with statuses and jurisdictions.'             },
-  { id:'topic',   icon:'📁', title:'Topic Brief',        desc:'Deep-dive on a single policy area.'                                  },
-  { id:'highpri', icon:'🔴', title:'High Priority Only', desc:'Just your high-priority bills with full detail on each.'             },
-  { id:'custom',  icon:'✏️', title:'Custom Selection',   desc:'Pick specific bills, topics, and sections to include.'               },
-];
-
-const EXPORT_SECTIONS = [
-  { id:'cb-summary',      label:'Executive Summary',    def:true  },
-  { id:'cb-developments', label:'Key Developments',     def:true  },
-  { id:'cb-table',        label:'Legislation Table',    def:true  },
-  { id:'cb-highpri',      label:'High Priority Detail', def:false },
-  { id:'cb-stats',        label:'Statistics Summary',   def:false },
-];
-
-// ── Analysis chips ────────────────────────────────────────────
-
-const ANALYSIS_CHIPS = [
-  'Policy Summary',
-  'Stakeholder Impact',
-  'Equity Analysis',
-  'Advocacy Angle',
-  'Comparison to Law',
-  'International Context',
-];
-
-// ── Page metadata (topbar titles and subtitles) ───────────────
-
-const PAGE_META = {
-  dashboard:   { title:'Dashboard',          sub:'Your tracked micromobility legislation'     },
-  brief:       { title:'Weekly Brief',        sub:'AI-generated policy digest'                },
-  search:      { title:'Live Web Search',     sub:'Find and track real legislation'           },
-  legislation: { title:'Bill Tracker',        sub:'All your tracked bills'                    },
-  export:      { title:'PDF Export',          sub:'Generate formatted policy reports'         },
-  slack:       { title:'Slack Automation',    sub:'Automated weekly brief delivery'           },
-  analyze:     { title:'AI Policy Analysis',  sub:'Powered by Claude'                         },
-};    <div class="g2">
-      <div class="card">
-        <div class="ch"><span class="ct">Bill Status Distribution</span></div>
-        <div class="cb"><div class="cw"><canvas id="statusChart"></canvas></div></div>
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page active">
+      <div class="mrow">
+        <div class="mc"><div class="ml">Tracked Bills</div><div class="mv" id="m-total">0</div><div class="md muted">In your tracker</div></div>
+        <div class="mc"><div class="ml">High Priority</div><div class="mv" id="m-high">0</div><div class="md" style="color:#e74c3c">Needs attention</div></div>
+        <div class="mc"><div class="ml">In Committee</div><div class="mv" id="m-committee">0</div><div class="md muted">Active now</div></div>
+        <div class="mc"><div class="ml">Enacted</div><div class="mv" id="m-enacted">0</div><div class="md up">Signed into law</div></div>
+      </div>
+      <div id="empty-state">
+        <div class="card">
+          <div class="cb" style="text-align:center;padding:48px 24px">
+            <div style="font-size:48px;margin-bottom:16px">🔍</div>
+            <div style="font-size:18px;font-weight:600;color:var(--text);margin-bottom:8px">No bills tracked yet</div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.7;max-width:380px;margin-left:auto;margin-right:auto">Use <strong>Live Search</strong> to find real legislation, then click <strong>+ Track Bill</strong> to add it to your dashboard.</div>
+            <button class="btn primary" data-goto="search" style="font-size:13px;padding:10px 24px">🔍 Search for Legislation</button>
+          </div>
+        </div>
+      </div>
+      <div id="dashboard-content" style="display:none">
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:16px">
+        <div class="card">
+          <div class="ch">
+            <span class="ct">Bill Status</span>
+            <span style="font-size:11px;color:var(--muted)">Click a slice to filter</span>
+          </div>
+          <div class="cb">
+            <div class="cw" style="height:180px"><canvas id="statusChart"></canvas></div>
+            <div id="status-legend" style="margin-top:10px;line-height:1.8"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch">
+            <span class="ct">Bills by Topic</span>
+            <span style="font-size:11px;color:var(--muted)">Click a bar to filter</span>
+          </div>
+          <div class="cb">
+            <div class="cw" style="height:180px"><canvas id="topicChart"></canvas></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch">
+            <span class="ct">Bills by Scope</span>
+            <span style="font-size:11px;color:var(--muted)">Click a bar to filter</span>
+          </div>
+          <div class="cb">
+            <div class="cw" style="height:180px"><canvas id="activityChart"></canvas></div>
+            <div id="scope-legend" style="margin-top:10px;line-height:1.8"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch">
+            <span class="ct">Priority Breakdown</span>
+            <span style="font-size:11px;color:var(--muted)">Click to filter</span>
+          </div>
+          <div class="cb">
+            <div class="cw" style="height:180px"><canvas id="priorityChart"></canvas></div>
+            <div id="priority-legend" style="margin-top:10px;line-height:1.8"></div>
+          </div>
+        </div>
       </div>
       <div class="card">
-        <div class="ch"><span class="ct">Bills by Topic</span></div>
-        <div class="cb"><div class="cw"><canvas id="topicChart"></canvas></div></div>
+        <div class="ch"><span class="ct">High-Priority Watchlist</span><button class="btn secondary sm" data-goto="legislation">Full tracker →</button></div>
+        <div class="cb p0" id="watchlist"></div>
       </div>
+      <div class="card">
+        <div class="ch"><span class="ct">Manage Tracked Bills</span><button class="btn sm" data-goto="search">+ Find More Bills</button></div>
+        <div class="cb p0" id="manage-bills-list"></div>
+      </div>
+      </div><!-- /dashboard-content -->
     </div>
 
-    <div class="card">
-      <div class="ch">
-        <span class="ct">High-Priority Watchlist</span>
-        <button class="btn secondary sm" data-goto="legislation">Full tracker →</button>
-      </div>
-      <div class="cb p0" id="watchlist"></div>
-    </div>
-
-    <div class="card">
-      <div class="ch">
-        <span class="ct">Manage Tracked Bills</span>
-        <button class="btn sm" data-goto="search">+ Find More Bills</button>
-      </div>
-      <div class="cb p0" id="manage-bills-list"></div>
-    </div>
-  </div>
-</div>
     <!-- WEEKLY BRIEF -->
     <div id="page-brief" class="page">
       <div class="brief-hero">
@@ -170,7 +155,7 @@ const PAGE_META = {
       <div class="card">
         <div class="ch"><span class="ct" id="search-status-label">Enter a query to search live legislation feeds</span><div id="search-hdr-actions"></div></div>
         <div id="search-results" class="cb">
-          <div class="empty-state">🌐<br>Live web search powered by Claude.<br>Results surface real bills, agency rulings, and news.</div>
+          <div class="empty-state">🌐<br>Live web search powered by Claude.<br>Type a query above or click a quick topic to find real bills, agency rulings, and news.</div>
         </div>
       </div>
       <div class="card">
@@ -195,86 +180,76 @@ const PAGE_META = {
 
     <!-- PDF EXPORT -->
     <div id="page-export" class="page">
-  <p class="page-intro">Choose a report format, select your topics and sections, then generate. Downloads as an HTML file — open in any browser and use File → Print → Save as PDF.</p>
+      <p class="page-intro">Choose a report format, select topics and sections, then generate. Downloads as HTML — open in browser and use File → Print → Save as PDF.</p>
 
-  <div class="export-grid" id="export-options"></div>
+      <div class="export-grid" id="export-options"></div>
 
-  <!-- Topic filter — shown for topic and custom modes -->
-  <div id="topic-filter-row" style="display:none;margin-bottom:16px">
-    <div class="label-sm" style="margin-bottom:8px">Select topic</div>
-    <div id="topic-filter-chips" style="display:flex;gap:6px;flex-wrap:wrap"></div>
-  </div>
+      <!-- Topic filter row (shown for Topic Brief mode) -->
+      <div id="topic-filter-row" style="display:none;margin-bottom:16px">
+        <div class="label-sm" style="margin-bottom:8px">Select topic</div>
+        <div id="topic-filter-chips" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+      </div>
 
-  <!-- Bill filter — shown for custom mode -->
-  <div id="bill-filter-row" style="display:none;margin-bottom:16px">
-    <div class="label-sm" style="margin-bottom:8px">Select bills to include</div>
-    <div id="bill-filter-list" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:10px"></div>
-  </div>
+      <!-- Bill selection (shown for Custom mode) -->
+      <div id="bill-filter-row" style="display:none;margin-bottom:16px">
+        <div class="label-sm" style="margin-bottom:8px">Select bills to include</div>
+        <div id="bill-filter-list" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:10px"></div>
+      </div>
 
-  <div class="g2" style="margin-bottom:14px">
-    <div>
-      <div class="label-sm">Include sections</div>
-      <div style="display:flex;flex-direction:column;gap:7px;margin-top:8px" id="export-sections"></div>
-    </div>
-    <div>
-      <div class="label-sm">Options</div>
-      <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
-        <div class="form-group">
-          <label class="form-label">Date range</label>
-          <select class="form-input" id="export-range">
-            <option>This week (Mar 31 – Apr 6)</option>
-            <option>Last 30 days</option>
-            <option>Q1 2026</option>
-            <option>All time</option>
-          </select>
+      <div class="g2" style="margin-bottom:14px">
+        <div>
+          <div class="label-sm">Include sections</div>
+          <div style="display:flex;flex-direction:column;gap:7px;margin-top:8px" id="export-sections"></div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Priority filter</label>
-          <select class="form-input" id="export-priority">
-            <option value="all">All priorities</option>
-            <option value="high">High priority only</option>
-            <option value="highmed">High + Medium</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Sort bills by</label>
-          <select class="form-input" id="export-sort">
-            <option value="priority">Priority</option>
-            <option value="status">Status</option>
-            <option value="updated">Recently updated</option>
-            <option value="jurisdiction">Jurisdiction</option>
-          </select>
+        <div>
+          <div class="label-sm">Options</div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+            <div class="form-group">
+              <label class="form-label">Priority filter</label>
+              <select class="form-input" id="export-priority">
+                <option value="all">All priorities</option>
+                <option value="high">High priority only</option>
+                <option value="highmed">High + Medium</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Sort bills by</label>
+              <select class="form-input" id="export-sort">
+                <option value="priority">Priority</option>
+                <option value="status">Status</option>
+                <option value="updated">Recently updated</option>
+                <option value="jurisdiction">Jurisdiction</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- Live preview -->
-  <div class="card" style="margin-bottom:14px">
-    <div class="ch">
-      <span class="ct">Preview</span>
-      <span id="preview-bill-count" style="font-size:12px;color:var(--muted)">0 bills selected</span>
-    </div>
-    <div class="cb" style="background:var(--surface)">
-      <div class="preview-page" id="pdf-preview">
-        <div class="preview-header">
-          <div class="preview-logo">🚲 VeloPolicy</div>
-          <div class="preview-week" id="preview-subtitle">Weekly Brief · Week of March 31 – April 6, 2026</div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="ch">
+          <span class="ct">Preview</span>
+          <span id="preview-bill-count" style="font-size:12px;color:var(--muted)">0 bills selected</span>
         </div>
-        <div class="preview-h1" id="preview-title">E-Bike Tax Credits, Lane Mandates & EU Safety Push</div>
-        <div class="preview-p" id="preview-desc">Select a report type above to update this preview.</div>
-        <div id="preview-table-wrap"></div>
-        <div style="margin-top:12px;font-size:9px;color:var(--muted);text-align:center;border-top:1px solid var(--border);padding-top:6px">Generated by VeloPolicy · April 2026</div>
+        <div class="cb" style="background:var(--surface)">
+          <div class="preview-page">
+            <div class="preview-header">
+              <div class="preview-logo">🚲 VeloPolicy</div>
+              <div class="preview-week" id="preview-subtitle">Weekly Brief · 2026</div>
+            </div>
+            <div class="preview-h1" id="preview-title">Weekly Policy Brief</div>
+            <div class="preview-p" id="preview-desc">Select a report type above to update this preview.</div>
+            <div id="preview-table-wrap"></div>
+            <div style="margin-top:12px;font-size:9px;color:var(--muted);text-align:center;border-top:1px solid var(--border);padding-top:6px">Generated by VeloPolicy · velopolicy.io</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button class="btn primary" id="generate-pdf-btn" style="font-size:13px;padding:10px 22px">⬇ Generate &amp; Download</button>
+        <button class="btn sm" data-goto="slack">💬 Send via Slack after export</button>
+        <span id="pdf-status" style="font-size:12px;color:var(--muted)"></span>
       </div>
     </div>
-  </div>
-
-  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-    <button class="btn primary" id="generate-pdf-btn" style="font-size:13px;padding:10px 22px">⬇ Generate &amp; Download</button>
-    <button class="btn sm" data-goto="slack">💬 Send via Slack after export</button>
-    <span id="pdf-status" style="font-size:12px;color:var(--muted)"></span>
-  </div>
-</div>
 
     <!-- SLACK AUTOMATION -->
     <div id="page-slack" class="page">
@@ -369,7 +344,50 @@ const PAGE_META = {
   </div>
 </div>
 
-<script src="/js/data.js"></script>
+<script>
+var STATUS_LABELS={intro:'Introduced',committee:'In Committee',floor:'Floor Vote',passed:'Passed',enacted:'Enacted',failed:'Failed'};
+var STATUS_OPTIONS=['intro','committee','floor','passed','enacted','failed'];
+var TOPICS=[
+  {icon:'⚡',title:'E-Bike Incentives',desc:'Tax credits, rebates, and purchase incentive programs.'},
+  {icon:'🛣',title:'Infrastructure',desc:'Protected lanes, intersections, and network funding.'},
+  {icon:'⚖️',title:'Safety & Liability',desc:'Helmet laws, age limits, and operator liability frameworks.'},
+  {icon:'🚧',title:'Parking & Zoning',desc:'Fleet docking, sidewalk bans, and permit frameworks.'},
+  {icon:'📡',title:'Data & Privacy',desc:'GPS tracking, data minimization, and privacy standards.'},
+  {icon:'🌍',title:'International',desc:'EU, UK, Canada, and global micromobility policy.'}
+];
+var TOPIC_OPTIONS=['E-Bike Incentives','Infrastructure','Safety & Liability','Parking & Zoning','Data & Privacy','International'];
+var DEVELOPMENTS=[
+  {d:'Get started',title:'Search for real legislation',body:'Use Live Search to find actual bills and click + Track Bill to add them here.'},
+  {d:'Tip',title:'Update status as bills advance',body:'Open any bill from the tracker or watchlist to change its status and priority.'},
+  {d:'Tip',title:'Set up Slack for weekly briefs',body:'Configure Slack Automation to receive an AI-generated brief every Monday morning.'}
+];
+var SEARCH_TOPICS=['E-bike tax credit 2026','Protected bike lanes legislation','E-scooter regulations 2026','Micromobility safety bill','Cargo bike policy','EU cycling directive 2026','Bike infrastructure funding','Speed pedelec law','Shared scooter permit','Cycling infrastructure federal'];
+var SLACK_HISTORY=[];
+var EXPORT_OPTIONS=[
+  {id:'weekly',icon:'📋',title:'Weekly Brief',desc:'Full digest with key developments, topic breakdown, and watchlist.'},
+  {id:'tracker',icon:'📊',title:'Full Bill Tracker',desc:'All your tracked bills with statuses and jurisdictions.'},
+  {id:'topic',icon:'📁',title:'Topic Brief',desc:'Deep-dive on a single policy area.'},
+  {id:'highpri',icon:'🔴',title:'High Priority Only',desc:'Just your high-priority bills with full detail on each.'},
+  {id:'custom',icon:'✏️',title:'Custom Selection',desc:'Pick specific bills, topics, and sections to include.'}
+];
+var EXPORT_SECTIONS=[
+  {id:'cb-summary',label:'Executive Summary',def:true},
+  {id:'cb-developments',label:'Key Developments',def:true},
+  {id:'cb-table',label:'Legislation Table',def:true},
+  {id:'cb-highpri',label:'High Priority Detail',def:false},
+  {id:'cb-stats',label:'Statistics Summary',def:false}
+];
+var ANALYSIS_CHIPS=['Policy Summary','Stakeholder Impact','Equity Analysis','Advocacy Angle','Comparison to Law','International Context'];
+var PAGE_META={
+  dashboard:{title:'Dashboard',sub:'Your tracked micromobility legislation'},
+  brief:{title:'Weekly Brief',sub:'AI-generated policy digest'},
+  search:{title:'Live Web Search',sub:'Find and track real legislation'},
+  legislation:{title:'Bill Tracker',sub:'All your tracked bills'},
+  export:{title:'PDF Export',sub:'Generate formatted policy reports'},
+  slack:{title:'Slack Automation',sub:'Automated weekly brief delivery'},
+  analyze:{title:'AI Policy Analysis',sub:'Powered by Claude'}
+};
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="/js/charts.js"></script>
 <script src="/js/app.js"></script>
