@@ -277,7 +277,6 @@ function buildLegTable() {
     { f:'federal', label:'Federal'   },
     { f:'state',   label:'State'     },
     { f:'local',   label:'Local'     },
-    { f:'intl',    label:'International' },
   ];
   const rightFilters = [
     { f:'high',    label:'🔴 High Priority' },
@@ -326,9 +325,14 @@ function renderLegTable() {
 
 // ── PDF Export ────────────────────────────────────────────────
 
+// ── PDF Export ────────────────────────────────────────────────
+
 let exportType = 'weekly';
+let selectedTopic = 'E-Bike Incentives';
+let selectedBillIds = new Set(BILLS.map(b => b.id));
 
 function buildExportPage() {
+  // Report type options
   const optEl = document.getElementById('export-options');
   if (optEl) {
     optEl.innerHTML = EXPORT_OPTIONS.map((o, i) => `
@@ -342,10 +346,12 @@ function buildExportPage() {
         optEl.querySelectorAll('.export-option').forEach(e => e.classList.remove('selected'));
         el.classList.add('selected');
         exportType = el.dataset.export;
+        updateExportUI();
       });
     });
   }
 
+  // Section checkboxes
   const secEl = document.getElementById('export-sections');
   if (secEl) {
     secEl.innerHTML = EXPORT_SECTIONS.map(s => `
@@ -354,63 +360,245 @@ function buildExportPage() {
       </label>`).join('');
   }
 
+  // Topic chips
+  const topicChips = document.getElementById('topic-filter-chips');
+  if (topicChips) {
+    topicChips.innerHTML = TOPIC_OPTIONS.map((t, i) =>
+      `<span class="stopic${i === 0 ? ' on' : ''}" data-topic="${t}">${t}</span>`
+    ).join('');
+    topicChips.querySelectorAll('.stopic').forEach(el => {
+      el.addEventListener('click', () => {
+        topicChips.querySelectorAll('.stopic').forEach(s => s.classList.remove('on'));
+        el.classList.add('on');
+        selectedTopic = el.dataset.topic;
+        updatePreview();
+      });
+    });
+  }
+
+  // Bill checkboxes for custom mode
+  const billList = document.getElementById('bill-filter-list');
+  if (billList) {
+    billList.innerHTML = BILLS.map(b => `
+      <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer">
+        <input type="checkbox" data-bill-id="${b.id}" checked>
+        <span class="pd p${b.p[0]}" style="flex-shrink:0"></span>
+        <span style="flex:1">${b.title}</span>
+        <span class="sb s-${b.s}" style="flex-shrink:0">${STATUS_LABELS[b.s]}</span>
+      </label>`).join('');
+    billList.querySelectorAll('input[type=checkbox]').forEach(el => {
+      el.addEventListener('change', () => {
+        if (el.checked) selectedBillIds.add(el.dataset.billId);
+        else selectedBillIds.delete(el.dataset.billId);
+        updatePreview();
+      });
+    });
+  }
+
+  // Priority and sort filters update preview
+  document.getElementById('export-priority')?.addEventListener('change', updatePreview);
+  document.getElementById('export-sort')?.addEventListener('change', updatePreview);
+
   document.getElementById('generate-pdf-btn')?.addEventListener('click', generatePDF);
+
+  updateExportUI();
+}
+
+function updateExportUI() {
+  const topicRow = document.getElementById('topic-filter-row');
+  const billRow  = document.getElementById('bill-filter-row');
+
+  if (topicRow) topicRow.style.display  = (exportType === 'topic') ? 'block' : 'none';
+  if (billRow)  billRow.style.display   = (exportType === 'custom') ? 'block' : 'none';
+
+  updatePreview();
+}
+
+function getFilteredBills() {
+  const priority = document.getElementById('export-priority')?.value || 'all';
+  const sort     = document.getElementById('export-sort')?.value || 'priority';
+
+  let bills = [...BILLS];
+
+  // Filter by type
+  if (exportType === 'highpri')  bills = bills.filter(b => b.p === 'high');
+  if (exportType === 'topic')    bills = bills.filter(b => b.topic === selectedTopic);
+  if (exportType === 'custom')   bills = bills.filter(b => selectedBillIds.has(b.id));
+
+  // Filter by priority dropdown
+  if (priority === 'high')       bills = bills.filter(b => b.p === 'high');
+  if (priority === 'highmed')    bills = bills.filter(b => b.p === 'high' || b.p === 'med');
+
+  // Sort
+  const sortOrder = { high:0, med:1, low:2 };
+  const statusOrder = { floor:0, committee:1, intro:2, passed:3, enacted:4, failed:5 };
+  if (sort === 'priority')    bills.sort((a,b) => (sortOrder[a.p]||0) - (sortOrder[b.p]||0));
+  if (sort === 'status')      bills.sort((a,b) => (statusOrder[a.s]||0) - (statusOrder[b.s]||0));
+  if (sort === 'updated')     bills.sort((a,b) => b.upd.localeCompare(a.upd));
+  if (sort === 'jurisdiction') bills.sort((a,b) => a.jur.localeCompare(b.jur));
+
+  return bills;
+}
+
+function updatePreview() {
+  const bills = getFilteredBills();
+  const countEl = document.getElementById('preview-bill-count');
+  const titleEl = document.getElementById('preview-title');
+  const subEl   = document.getElementById('preview-subtitle');
+  const descEl  = document.getElementById('preview-desc');
+  const tableEl = document.getElementById('preview-table-wrap');
+
+  if (countEl) countEl.textContent = `${bills.length} bill${bills.length !== 1 ? 's' : ''} selected`;
+
+  const titles = {
+    weekly:  'Weekly Brief — Week of March 31 – April 6, 2026',
+    tracker: 'Full Bill Tracker — All Active Legislation',
+    topic:   `Topic Brief — ${selectedTopic}`,
+    highpri: 'High Priority Bills — April 2026',
+    custom:  'Custom Report — Selected Bills',
+  };
+  const subs = {
+    weekly:  'Weekly Brief · Week of March 31 – April 6, 2026',
+    tracker: 'Full Tracker · 142 active bills · April 2026',
+    topic:   `Topic Brief · ${selectedTopic} · April 2026`,
+    highpri: 'High Priority · April 2026',
+    custom:  'Custom Report · April 2026',
+  };
+
+  if (titleEl) titleEl.textContent = titles[exportType] || '';
+  if (subEl)   subEl.textContent   = subs[exportType] || '';
+  if (descEl)  descEl.textContent  = `${bills.length} bills included in this report.`;
+
+  if (tableEl) {
+    tableEl.innerHTML = `
+      <table class="preview-table" style="margin-top:10px">
+        <tr><th>Bill ID</th><th>Title</th><th>Status</th></tr>
+        ${bills.slice(0,5).map(b => `<tr><td>${b.id}</td><td>${b.title.substring(0,35)}…</td><td>${STATUS_LABELS[b.s]}</td></tr>`).join('')}
+        ${bills.length > 5 ? `<tr><td colspan="3" style="color:#999;font-style:italic">…and ${bills.length - 5} more bills</td></tr>` : ''}
+      </table>`;
+  }
 }
 
 function generatePDF() {
   const statusEl = document.getElementById('pdf-status');
-  const include = {
+  const bills    = getFilteredBills();
+  const include  = {
     summary:      document.getElementById('cb-summary')?.checked,
     developments: document.getElementById('cb-developments')?.checked,
     table:        document.getElementById('cb-table')?.checked,
+    highpri:      document.getElementById('cb-highpri')?.checked,
+    stats:        document.getElementById('cb-stats')?.checked,
   };
 
-  const billRows = BILLS
-    .filter(b => b.p !== 'low')
-    .map(b => `<tr><td>${b.id}</td><td>${b.title}</td><td>${b.jur}</td><td>${STATUS_LABELS[b.s]}</td></tr>`)
-    .join('');
+  const reportTitle = {
+    weekly:  'Weekly Brief — Week of March 31 – April 6, 2026',
+    tracker: 'Full Bill Tracker — All Active Legislation',
+    topic:   `Topic Brief — ${selectedTopic}`,
+    highpri: 'High Priority Bills — April 2026',
+    custom:  'Custom Report — Selected Bills',
+  }[exportType] || 'VeloPolicy Report';
+
+  const billRows = bills.map(b => `
+    <tr>
+      <td>${b.id}</td>
+      <td>${b.title}</td>
+      <td>${b.jur}</td>
+      <td>${b.topic}</td>
+      <td>${STATUS_LABELS[b.s]}</td>
+      <td style="color:${b.p==='high'?'#c0392b':b.p==='med'?'#e9a000':'#94a3b8'};font-weight:600">${b.p.charAt(0).toUpperCase()+b.p.slice(1)}</td>
+    </tr>`).join('');
+
+  const statsBlock = include.stats ? `
+    <h2>Statistics</h2>
+    <p>Total bills in this report: <strong>${bills.length}</strong></p>
+    <p>High priority: <strong>${bills.filter(b=>b.p==='high').length}</strong> &nbsp;|&nbsp;
+       In committee: <strong>${bills.filter(b=>b.s==='committee').length}</strong> &nbsp;|&nbsp;
+       Enacted: <strong>${bills.filter(b=>b.s==='enacted').length}</strong> &nbsp;|&nbsp;
+       Floor vote: <strong>${bills.filter(b=>b.s==='floor').length}</strong></p>` : '';
+
+  const highPriBlock = include.highpri ? `
+    <h2>High Priority Detail</h2>
+    ${bills.filter(b=>b.p==='high').map(b=>`
+      <div class="dev">
+        <div class="dev-date">${b.id} · ${b.jur} · ${STATUS_LABELS[b.s]}</div>
+        <div class="dev-title">${b.title}</div>
+        <p>Topic: ${b.topic} · Scope: ${b.scope.toUpperCase()} · Last updated: ${b.upd}</p>
+      </div>`).join('')}` : '';
 
   const html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
-<title>VeloPolicy Weekly Brief — Apr 6, 2026</title>
+<title>VeloPolicy — ${reportTitle}</title>
 <style>
-  body{font-family:Georgia,serif;margin:48px;color:#111;font-size:13px;line-height:1.7;max-width:720px}
-  .header{border-bottom:3px solid #1a4731;padding-bottom:12px;margin-bottom:24px}
-  .logo{font-size:22px;font-weight:700;color:#1a4731;margin-bottom:2px}
-  .week{font-size:11px;color:#666}
-  h1{font-size:20px;color:#111;margin:24px 0 8px;font-weight:700}
-  h2{font-size:12px;color:#1a4731;margin:20px 0 6px;text-transform:uppercase;letter-spacing:.5px;font-family:Arial,sans-serif}
+  body{font-family:Georgia,serif;margin:48px;color:#111;font-size:13px;line-height:1.7;max-width:760px}
+  .header{border-bottom:3px solid #1a4731;padding-bottom:12px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-end}
+  .logo{font-size:20px;font-weight:700;color:#1a4731}
+  .week{font-size:11px;color:#666;text-align:right}
+  h1{font-size:22px;color:#111;margin:0 0 20px;font-weight:700}
+  h2{font-size:11px;color:#1a4731;margin:24px 0 8px;text-transform:uppercase;letter-spacing:.8px;font-family:Arial,sans-serif;border-bottom:1px solid #d8f3dc;padding-bottom:4px}
   p{margin-bottom:10px;color:#333;font-family:Arial,sans-serif;font-size:13px}
-  .dev{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #eee}
-  .dev-date{font-size:10px;color:#999;font-family:Arial,sans-serif}
-  .dev-title{font-size:14px;font-weight:700;margin:2px 0}
+  .dev{margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #eee}
+  .dev-date{font-size:10px;color:#999;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:.5px}
+  .dev-title{font-size:15px;font-weight:700;margin:3px 0 6px}
   table{width:100%;border-collapse:collapse;margin:12px 0;font-size:11px;font-family:Arial,sans-serif}
-  th{text-align:left;padding:6px 8px;border-bottom:2px solid #1a4731;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#666}
-  td{padding:7px 8px;border-bottom:1px solid #eee;color:#333}
+  th{text-align:left;padding:7px 8px;border-bottom:2px solid #1a4731;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#666;background:#f9fafb}
+  td{padding:7px 8px;border-bottom:1px solid #eee;color:#333;vertical-align:top}
+  tr:nth-child(even) td{background:#fafafa}
   .footer{margin-top:48px;padding-top:12px;border-top:1px solid #eee;font-size:10px;color:#999;text-align:center;font-family:Arial,sans-serif}
-  @media print{body{margin:24px}}
+  @media print{body{margin:24px}h2{page-break-after:avoid}.dev{page-break-inside:avoid}}
 </style></head><body>
 <div class="header">
-  <div class="logo">🚲 VeloPolicy — Micromobility Policy Intelligence</div>
-  <div class="week">Weekly Brief · Week of March 31 – April 6, 2026 · Vol. 12</div>
+  <div>
+    <div class="logo">🚲 VeloPolicy</div>
+    <div style="font-size:12px;color:#666;margin-top:2px">Micromobility Policy Intelligence</div>
+  </div>
+  <div class="week">
+    ${reportTitle}<br>
+    Generated ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}
+  </div>
 </div>
-<h1>E-Bike Tax Credits, Urban Lane Mandates &amp; EU Safety Harmonization</h1>
-${include.summary ? `<h2>Executive Summary</h2><p>This week's legislative landscape shows accelerating momentum around e-bike incentive programs at the federal level, while several states move protected infrastructure bills toward floor votes. The EU's draft harmonization directive is reshaping international policy benchmarks. 142 bills are actively tracked across 41 jurisdictions.</p>` : ''}
-${include.developments ? `<h2>Key Developments</h2>${DEVELOPMENTS.map(x => `<div class="dev"><div class="dev-date">${x.d}, 2026</div><div class="dev-title">${x.title}</div><p>${x.body}</p></div>`).join('')}` : ''}
-${include.table ? `<h2>High-Priority Bill Tracker</h2><table><thead><tr><th>Bill ID</th><th>Title</th><th>Jurisdiction</th><th>Status</th></tr></thead><tbody>${billRows}</tbody></table>` : ''}
-<div class="footer">Generated by VeloPolicy · velopolicy.io · ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div>
+<h1>${reportTitle}</h1>
+
+${include.summary && exportType === 'weekly' ? `
+<h2>Executive Summary</h2>
+<p>This week's legislative landscape shows accelerating momentum around e-bike incentive programs at the federal level, while several states move protected infrastructure bills toward floor votes. The EU's draft harmonization directive is reshaping international policy benchmarks. 142 bills are actively tracked across 41 jurisdictions.</p>` : ''}
+
+${include.summary && exportType !== 'weekly' ? `
+<h2>Report Summary</h2>
+<p>This report covers <strong>${bills.length} bills</strong> matching your selected filters. 
+High priority: ${bills.filter(b=>b.p==='high').length} · 
+In committee: ${bills.filter(b=>b.s==='committee').length} · 
+Enacted: ${bills.filter(b=>b.s==='enacted').length}.</p>` : ''}
+
+${include.developments && exportType === 'weekly' ? `
+<h2>Key Developments</h2>
+${DEVELOPMENTS.map(x=>`<div class="dev"><div class="dev-date">${x.d}, 2026</div><div class="dev-title">${x.title}</div><p>${x.body}</p></div>`).join('')}` : ''}
+
+${statsBlock}
+
+${include.table ? `
+<h2>Legislation — ${bills.length} Bill${bills.length!==1?'s':''}</h2>
+<table>
+  <thead><tr><th>Bill ID</th><th>Title</th><th>Jurisdiction</th><th>Topic</th><th>Status</th><th>Priority</th></tr></thead>
+  <tbody>${billRows}</tbody>
+</table>` : ''}
+
+${highPriBlock}
+
+<div class="footer">
+  Generated by VeloPolicy · velopolicy.io · ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})} · 
+  Report type: ${reportTitle}
+</div>
 </body></html>`;
 
-  const blob = new Blob([html], { type: 'text/html' });
+  const filename = `VeloPolicy_${exportType}_${new Date().toISOString().slice(0,10)}.html`;
+  const blob = new Blob([html], { type:'text/html' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
-  a.href     = url;
-  a.download = 'VeloPolicy_Brief_Apr6_2026.html';
-  a.click();
+  a.href = url; a.download = filename; a.click();
   URL.revokeObjectURL(url);
 
   if (statusEl) {
-    statusEl.textContent = '✓ Downloaded — open in browser, then File → Print → Save as PDF';
-    setTimeout(() => statusEl.textContent = '', 8000);
+    statusEl.textContent = `✓ ${filename} downloaded — open in browser, then File → Print → Save as PDF`;
+    setTimeout(() => statusEl.textContent = '', 10000);
   }
   toast('Report downloaded!', '📄');
 }
