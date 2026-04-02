@@ -524,6 +524,7 @@ textarea:focus { outline: none; border-color: var(--green-light); box-shadow: 0 
   </div>
 </div>
 
+
 <script>
 var STATUS_LABELS={intro:'Introduced',committee:'In Committee',floor:'Floor Vote',passed:'Passed',enacted:'Enacted',failed:'Failed'};
 var STATUS_OPTIONS=['intro','committee','floor','passed','enacted','failed'];
@@ -1043,6 +1044,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // API HELPERS
 // ─────────────────────────────────────────────────────────────
 
+var _searchBusy = false;
+
 async function callClaude(body) {
   const res = await fetch('/api/claude', {
     method: 'POST',
@@ -1050,7 +1053,11 @@ async function callClaude(body) {
     body: JSON.stringify(body),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error || `API error ${res.status}`);
+  if (!res.ok) {
+    var errMsg = data.error;
+    if (typeof errMsg === 'object') errMsg = JSON.stringify(errMsg);
+    throw new Error(errMsg || 'API error ' + res.status);
+  }
   return data;
 }
 
@@ -1514,8 +1521,10 @@ function quickRunMonitor(q) {
 }
 
 async function doSearch() {
+  if (_searchBusy) { toast('Search already running, please wait...', 'i'); return; }
   const q = document.getElementById('search-q') && document.getElementById('search-q').value.trim();
   if (!q) { toast('Enter a search query'); return; }
+  _searchBusy = true;
 
   const sr  = document.getElementById('search-results');
   const lbl = document.getElementById('search-status-label');
@@ -1584,8 +1593,12 @@ async function doSearch() {
 
   } catch (err) {
     setSbDot('sb-search', '');
-    if (sr)  sr.innerHTML    = '<div style="padding:16px;font-size:13px;color:var(--red)">Search failed: ' + err.message + '<br><small style="color:var(--muted)">Check that ANTHROPIC_API_KEY is set in Netlify environment variables.</small></div>';
+    var errText = err.message || String(err);
+    if (errText.indexOf('{') === 0) { try { errText = JSON.parse(errText).error || errText; } catch(_){} }
+    if (sr)  sr.innerHTML    = '<div style="padding:16px;font-size:13px;color:var(--red)">Search failed: ' + errText + '<br><small style="color:var(--muted)">Check that ANTHROPIC_API_KEY is set in Netlify → Site configuration → Environment variables.</small></div>';
     if (lbl) lbl.textContent = 'Search failed';
+  } finally {
+    _searchBusy = false;
   }
 }
 
@@ -1620,7 +1633,23 @@ function trackFromSearch(result) {
 
   if (confirmed) {
     addTrackedBill(bill);
-    doSearch(); // refresh to show tracked state
+    // Refresh just the results display to show Tracked badge without re-searching
+    var bills = window.BILLS || [];
+    var resultItems = document.querySelectorAll('.result-item');
+    resultItems.forEach(function(item) {
+      var trackBtn = item.querySelector('.btn.primary.sm');
+      if (trackBtn && trackBtn.textContent === '+ Track Bill') {
+        // Check if this result is now tracked
+        var onclick = trackBtn.getAttribute('onclick') || '';
+        var idMatch = onclick.match(/"billId":"([^"]+)"/);
+        if (idMatch) {
+          var billId = idMatch[1];
+          if (bills.find(function(b) { return b.id === billId; })) {
+            trackBtn.outerHTML = '<span class="btn sm" style="background:var(--green-pale);color:var(--green);border-color:var(--green-light);cursor:default">Tracked</span>';
+          }
+        }
+      }
+    });
   }
 }
 
@@ -2137,7 +2166,8 @@ async function sendSlackNow() {
 
   } catch (err) {
     setSbDot('sb-slack', '');
-    toast('Slack send failed: ' + err.message, 'x');
+    var sErrText = (typeof err.message === 'string' ? err.message : JSON.stringify(err.message)) || String(err);
+    toast('Slack send failed: ' + sErrText, 'x');
   } finally {
     if (btn) { btn.disabled = false; btn.innerHTML = 'Send Now (Test)'; }
   }
@@ -2220,7 +2250,8 @@ async function runAnalysis() {
     setSbDot('sb-api', 'ok');
 
   } catch (err) {
-    if (ra) ra.innerHTML = '<div style="color:var(--red);font-size:13px;line-height:1.6">Analysis failed: ' + err.message + '<br><small style="color:var(--muted)">Check that ANTHROPIC_API_KEY is set in Netlify environment variables.</small></div>';
+    var aErrText = (typeof err.message === 'string' ? err.message : JSON.stringify(err.message)) || String(err);
+    if (ra) ra.innerHTML = '<div style="color:var(--red);font-size:13px;line-height:1.6">Analysis failed: ' + aErrText + '<br><small style="color:var(--muted)">Check that ANTHROPIC_API_KEY is set in Netlify environment variables.</small></div>';
     setSbDot('sb-api', '');
   }
 }
