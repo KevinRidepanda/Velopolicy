@@ -105,7 +105,7 @@ var PAGE_META = {
   slack:       { title:'Slack Automation',    sub:'Automated weekly brief delivery'           },
   analyze:     { title:'AI Policy Analysis',  sub:'Powered by Claude'                         },
 };
-const EXPORT_SECTIONS = [
+var EXPORT_SECTIONS = [
   { id:'cb-summary',      label:'Executive Summary',    def:true  },
   { id:'cb-developments', label:'Key Developments',     def:true  },
   { id:'cb-table',        label:'Legislation Table',    def:true  },
@@ -113,7 +113,7 @@ const EXPORT_SECTIONS = [
   { id:'cb-stats',        label:'Statistics Summary',   def:false },
 ];
 
-const TOPIC_OPTIONS = [
+var TOPIC_OPTIONS = [
   'E-Bike Incentives',
   'Infrastructure',
   'Safety & Liability',
@@ -122,12 +122,12 @@ const TOPIC_OPTIONS = [
   'International',
 ];
 
-const ANALYSIS_CHIPS = [
+var ANALYSIS_CHIPS = [
   'Policy Summary', 'Stakeholder Impact', 'Equity Analysis',
   'Advocacy Angle', 'Comparison to Law', 'International Context',
 ];
 
-const PAGE_META = {
+var PAGE_META = {
   dashboard:   { title:'Dashboard',          sub:'Your tracked micromobility legislation'        },
   brief:       { title:'Weekly Brief',        sub:'AI-generated policy digest'                   },
   search:      { title:'Live Web Search',     sub:'Find and track real legislation'              },
