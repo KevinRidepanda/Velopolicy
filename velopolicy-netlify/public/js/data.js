@@ -1,20 +1,27 @@
 // public/js/data.js
-// All frontend data — bills, topics, monitors, history.
+// Bills are now stored in localStorage and managed through the dashboard.
+// BILLS starts empty — you add real bills via Live Search.
 
-const BILLS = [
-  { id:'HB 1822',      title:'National E-Bike Tax Credit Expansion Act',      topic:'E-Bike Incentives', scope:'federal', jur:'U.S. Federal',  s:'committee', p:'high', upd:'Apr 2'  },
-  { id:'CA SB 403',    title:'Protected Bike Lane Mandate for Urban Streets', topic:'Infrastructure',    scope:'state',   jur:'California',     s:'floor',     p:'high', upd:'Apr 1'  },
-  { id:'TX HB 2241',   title:'E-Scooter Helmet Requirement Under 18',         topic:'Safety',            scope:'state',   jur:'Texas',          s:'intro',     p:'med',  upd:'Mar 29' },
-  { id:'NYC Local 88', title:'E-Scooter Speed Limit Revision',                topic:'Safety',            scope:'local',   jur:'New York City',  s:'enacted',   p:'med',  upd:'Mar 28' },
-  { id:'EU Dir 2026/14',title:'Harmonized Micromobility Safety Standards',    topic:'International',     scope:'intl',    jur:'European Union', s:'intro',     p:'high', upd:'Mar 31' },
-  { id:'OR AB 1105',   title:'Micromobility Sidewalk Riding Prohibition',     topic:'Parking & Zoning',  scope:'state',   jur:'Oregon',         s:'committee', p:'low',  upd:'Mar 27' },
-  { id:'CO SB 902',    title:'E-Bike Rebate for Low-Income Buyers',           topic:'E-Bike Incentives', scope:'state',   jur:'Colorado',       s:'passed',    p:'high', upd:'Mar 25' },
-  { id:'IL HB 4401',   title:'Shared E-Scooter Fleet Permit Framework',       topic:'Parking & Zoning',  scope:'state',   jur:'Illinois',       s:'committee', p:'med',  upd:'Mar 24' },
-  { id:'UK S 2026-11', title:'Cycle Lane Network Expansion Fund',             topic:'Infrastructure',    scope:'intl',    jur:'United Kingdom', s:'passed',    p:'med',  upd:'Mar 22' },
-  { id:'WA HB 1654',   title:'Protected Intersections for Cyclists',          topic:'Infrastructure',    scope:'state',   jur:'Washington',     s:'intro',     p:'med',  upd:'Mar 20' },
-  { id:'NYC Local 92', title:'GPS Data Minimization for Shared Fleets',       topic:'Data & Privacy',    scope:'local',   jur:'New York City',  s:'committee', p:'low',  upd:'Mar 18' },
-  { id:'MA SB 717',    title:'Cargo E-Bike Commercial Delivery Lanes',        topic:'Infrastructure',    scope:'state',   jur:'Massachusetts',  s:'intro',     p:'low',  upd:'Mar 15' },
-];
+// Load tracked bills from localStorage, or start with empty array
+function loadTrackedBills() {
+  try {
+    const stored = localStorage.getItem('velopolicy_bills');
+    return stored ? JSON.parse(stored) : [];
+  } catch(e) {
+    return [];
+  }
+}
+
+function saveTrackedBills(bills) {
+  try {
+    localStorage.setItem('velopolicy_bills', JSON.stringify(bills));
+  } catch(e) {
+    console.error('Could not save bills:', e);
+  }
+}
+
+// This is the live bill list — replaces the hardcoded BILLS array
+let BILLS = loadTrackedBills();
 
 const STATUS_LABELS = {
   intro:     'Introduced',
@@ -25,50 +32,52 @@ const STATUS_LABELS = {
   failed:    'Failed',
 };
 
+const STATUS_OPTIONS = ['intro','committee','floor','passed','enacted','failed'];
+
 const TOPICS = [
-  { icon:'⚡', title:'E-Bike Incentives',  desc:'Federal credit bill in markup; 6 states add rebate programs.',   n:'7 bills'    },
-  { icon:'🛣',  title:'Infrastructure',     desc:'CA, NY, WA push protected lane requirements for large cities.',  n:'5 bills'    },
-  { icon:'⚖️', title:'Safety & Liability', desc:'Helmet laws, age limits, and liability frameworks debated.',     n:'4 bills'    },
-  { icon:'🚧', title:'Parking & Zoning',   desc:'Shared-fleet docking, sidewalk bans, permit frameworks.',        n:'6 bills'    },
+  { icon:'⚡', title:'E-Bike Incentives',  desc:'Tax credits, rebates, and purchase incentive programs.',   n:'' },
+  { icon:'🛣',  title:'Infrastructure',     desc:'Protected lanes, intersections, and network funding.',     n:'' },
+  { icon:'⚖️', title:'Safety & Liability', desc:'Helmet laws, age limits, and operator liability.',         n:'' },
+  { icon:'🚧', title:'Parking & Zoning',   desc:'Fleet docking, sidewalk bans, and permit frameworks.',     n:'' },
+  { icon:'📡', title:'Data & Privacy',     desc:'GPS tracking, data minimization, and privacy rules.',      n:'' },
+  { icon:'🌍', title:'International',      desc:'EU, UK, Canada, and global policy developments.',          n:'' },
 ];
 
 const DEVELOPMENTS = [
-  { d:'Apr 2',  title:'HB 1822 advances to markup',             body:'Passed committee 7–3. Income cap of $150k/$300k (single/joint) and $1,500 per-unit limit added. Floor vote expected within 3 weeks.' },
-  { d:'Apr 1',  title:'California SB 403 floor vote scheduled', body:'Senate floor vote set for April 14. Opposition from rural counties intensified this week.' },
-  { d:'Mar 31', title:'EU publishes draft Directive 2026/14',   body:'25 km/h speed cap and mandatory UL certification for all micromobility batteries sold in EU.' },
+  { d:'This week', title:'Add your first bill',          body:'Use Live Search to find real legislation and click + Track to add it here.' },
+  { d:'Getting started', title:'Search for any topic',  body:'Try searching "e-bike tax credit 2026" or "protected bike lane" to find current bills.' },
+  { d:'Tip', title:'Update bill status as it changes',  body:'Click any bill in the tracker to update its status, priority, and notes.' },
 ];
 
 const SEARCH_TOPICS = [
-  'E-bike tax credit', 'Protected bike lanes', 'E-scooter regulations',
-  'Micromobility safety', 'Cargo bike policy',
-  'Bike infrastructure funding', 'e-bike speed regulations',
+  'E-bike tax credit 2026',
+  'Protected bike lanes legislation',
+  'E-scooter regulations 2026',
+  'Micromobility safety bill',
+  'Cargo bike policy',
+  'EU cycling directive 2026',
+  'Bike infrastructure funding',
+  'Speed pedelec law',
+  'Shared scooter permit',
+  'Cycling infrastructure federal',
 ];
 
-const MONITORS = [
-  { q:'federal e-bike tax credit 2026',   freq:'Weekly',    last:'Apr 2',  hits:3 },
-  { q:'protected bike lane legislation',  freq:'Weekly',    last:'Mar 31', hits:7 },
-  { q:'EU micromobility directive 2026',  freq:'Bi-weekly', last:'Mar 28', hits:2 },
-];
+const MONITORS = [];
 
-const SLACK_HISTORY = [
-  { icon:'💬', d:'Weekly Brief — Week of Mar 24', t:'Mar 31, 8:01 AM', s:'ok'   },
-  { icon:'💬', d:'Weekly Brief — Week of Mar 17', t:'Mar 24, 8:00 AM', s:'ok'   },
-  { icon:'💬', d:'Weekly Brief — Week of Mar 10', t:'Mar 17, 8:00 AM', s:'fail' },
-];
+const SLACK_HISTORY = [];
 
 const EXPORT_OPTIONS = [
   { id:'weekly',  icon:'📋', title:'Weekly Brief',      desc:'Full digest with key developments, topic breakdown, and watchlist.' },
-  { id:'tracker', icon:'📊', title:'Full Bill Tracker',  desc:'Complete legislation table with all bills, statuses, and jurisdictions.' },
-  { id:'topic',   icon:'📁', title:'Topic Brief',        desc:'Deep-dive on a single policy area — incentives, infrastructure, safety, etc.' },
-  { id:'highpri', icon:'🔴', title:'High Priority Only', desc:'Just the high-priority bills with full detail on each.' },
-  { id:'custom',  icon:'✏️', title:'Custom Selection',   desc:'Pick specific bills, topics, and date ranges to include.' },
+  { id:'tracker', icon:'📊', title:'Full Bill Tracker',  desc:'All your tracked bills with statuses and jurisdictions.' },
+  { id:'topic',   icon:'📁', title:'Topic Brief',        desc:'Deep-dive on a single policy area.' },
+  { id:'highpri', icon:'🔴', title:'High Priority Only', desc:'Just your high-priority bills with full detail.' },
+  { id:'custom',  icon:'✏️', title:'Custom Selection',   desc:'Pick specific bills, topics, and sections.' },
 ];
 
 const EXPORT_SECTIONS = [
   { id:'cb-summary',      label:'Executive Summary',    def:true  },
   { id:'cb-developments', label:'Key Developments',     def:true  },
   { id:'cb-table',        label:'Legislation Table',    def:true  },
-  { id:'cb-topics',       label:'Topic Briefs',         def:false },
   { id:'cb-highpri',      label:'High Priority Detail', def:false },
   { id:'cb-stats',        label:'Statistics Summary',   def:false },
 ];
@@ -78,6 +87,8 @@ const TOPIC_OPTIONS = [
   'Infrastructure',
   'Safety & Liability',
   'Parking & Zoning',
+  'Data & Privacy',
+  'International',
 ];
 
 const ANALYSIS_CHIPS = [
@@ -86,11 +97,11 @@ const ANALYSIS_CHIPS = [
 ];
 
 const PAGE_META = {
-  dashboard:   { title:'Dashboard',          sub:'Week of March 31 – April 6, 2026'         },
-  brief:       { title:'Weekly Brief',        sub:'AI-generated policy digest · Vol. 12'     },
-  search:      { title:'Live Web Search',     sub:'Powered by Claude — real-time tracking'   },
-  legislation: { title:'Bill Tracker',        sub:'142 active bills across 41 jurisdictions' },
-  export:      { title:'PDF Export',          sub:'Generate formatted policy reports'        },
-  slack:       { title:'Slack Automation',    sub:'Automated weekly brief delivery'          },
-  analyze:     { title:'AI Policy Analysis',  sub:'Powered by Claude'                        },
+  dashboard:   { title:'Dashboard',          sub:'Your tracked micromobility legislation'        },
+  brief:       { title:'Weekly Brief',        sub:'AI-generated policy digest'                   },
+  search:      { title:'Live Web Search',     sub:'Find and track real legislation'              },
+  legislation: { title:'Bill Tracker',        sub:'All your tracked bills'                       },
+  export:      { title:'PDF Export',          sub:'Generate formatted policy reports'            },
+  slack:       { title:'Slack Automation',    sub:'Automated weekly brief delivery'              },
+  analyze:     { title:'AI Policy Analysis',  sub:'Powered by Claude'                            },
 };
