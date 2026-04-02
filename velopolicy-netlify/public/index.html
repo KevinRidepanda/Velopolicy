@@ -1523,7 +1523,12 @@ async function doSearch() {
   if (lbl) lbl.textContent = 'Searching...';
   if (act) act.innerHTML   = '';
 
-  const prompt = 'Search the web for e-bike/micromobility/cycling legislation about: "' + q + '". Return ONLY a JSON array, no other text:\n[{"title":"...","snippet":"1-2 sentences","source":"...","url":"...","date":"...","type":"bill|news","relevance":"high|medium","jurisdiction":"...","billId":"bill ID or empty"}]\n3-5 results, prioritize real bills.';
+  var prompt = 'Search for ONLY legislation, proposed rulemaking, rulemaking updates, and proposed legislation related to: "' + q + '".' +
+    ' EXCLUDE news articles, opinion pieces, and blog posts.' +
+    ' Focus on: state bills, federal bills, city ordinances, agency rulemakings, regulatory proposals.' +
+    ' For each result return a JSON object. Return ONLY a JSON array, no other text:\n' +
+    '[{"title":"Official bill/rule title","snippet":"What it does in 1-2 sentences","source":"Government body or agency","url":"direct URL","date":"Month Year","type":"bill|rulemaking|ordinance|proposed_rule","relevance":"high|medium","jurisdiction":"State or body","billId":"bill number e.g. SB 1271 or empty"}]' +
+    '\n3-5 results. If no legislation found, return an empty array [].';
 
   try {
     const data = await callClaude({
@@ -1592,25 +1597,28 @@ async function doSearch() {
     if (lbl) lbl.textContent = results.length + ' result' + (results.length !== 1 ? 's' : '') + ' for: ' + q;
     if (act) act.innerHTML   = '<button class="btn secondary sm" onclick="saveMonitor(\'' + q.replace(/'/g, '').substring(0, 60) + '\')">+ Save as Monitor</button>';
 
-    const bills = window.BILLS || [];
-    if (sr) sr.innerHTML = results.map(function(r) {
-      const tracked = r.billId && bills.find(function(b) { return b.id === r.billId; });
-      const rJson   = JSON.stringify(r).replace(/"/g, '&quot;');
-      return '<div class="result-item">' +
+    // Store results globally so onclick can reference by index (avoids JSON encoding issues)
+    window._lastSearchResults = results;
+    var bills = window.BILLS || [];
+    if (sr) sr.innerHTML = results.map(function(r, idx) {
+      var tracked = r.billId && bills.find(function(b) { return b.id === r.billId; });
+      var typeLabel = (r.type || 'bill').replace(/_/g,' ');
+      var analyzeText = (r.title + ': ' + r.snippet).replace(/"/g,'').replace(/'/g,'').replace(/\n/g,' ').substring(0,180);
+      return '<div class="result-item" id="result-item-' + idx + '">' +
         '<div class="ri-meta">' +
         '<span class="sb ' + (r.relevance === 'high' ? 's-enacted' : 's-committee') + '">' + (r.relevance === 'high' ? 'High relevance' : 'Relevant') + '</span>' +
-        '<span class="stag">' + (r.type || 'news') + '</span>' +
+        '<span class="stag">' + typeLabel + '</span>' +
         (r.jurisdiction ? '<span class="stag">' + r.jurisdiction + '</span>' : '') +
         '<span style="font-size:10.5px;color:var(--muted)">' + (r.date || '') + '</span>' +
         '</div>' +
         '<div class="ri-title">' + r.title + '</div>' +
         '<div class="ri-snippet">' + r.snippet + '</div>' +
         '<div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
-        '<a class="ri-source" href="' + (r.url || '#') + '" target="_blank" rel="noopener">' + (r.source || 'Source') + ' Link</a>' +
+        '<a class="ri-source" href="' + (r.url || '#') + '" target="_blank" rel="noopener">' + (r.source || 'Source') + ' ↗</a>' +
         (tracked
-          ? '<span class="btn sm" style="background:var(--green-pale);color:var(--green);border-color:var(--green-light);cursor:default">Tracked</span>'
-          : '<button class="btn primary sm" onclick=\'trackFromSearch(' + rJson + ')\'>+ Track Bill</button>') +
-        '<button class="btn sm" onclick="nav(\'analyze\');document.getElementById(\'bill-text\').value=\'' + (r.title + ': ' + r.snippet).replace(/'/g, '').replace(/\n/g, ' ').substring(0, 200) + '\'">Analyze</button>' +
+          ? '<span class="btn sm" style="background:var(--green-pale);color:var(--green);border-color:var(--green-light);cursor:default">✓ Tracked</span>'
+          : '<button class="btn primary sm" onclick="trackFromIndex(' + idx + ')">+ Track Bill</button>') +
+        '<button class="btn sm" onclick="nav('analyze');setTimeout(function(){document.getElementById('bill-text').value='' + analyzeText + ''},100)">Analyze →</button>' +
         '</div></div>';
     }).join('');
 
@@ -1628,6 +1636,13 @@ async function doSearch() {
 // ─────────────────────────────────────────────────────────────
 // TRACK FROM SEARCH
 // ─────────────────────────────────────────────────────────────
+
+function trackFromIndex(idx) {
+  var results = window._lastSearchResults || [];
+  var result  = results[idx];
+  if (!result) { toast('Result not found - please search again', '!'); return; }
+  trackFromSearch(result);
+}
 
 function trackFromSearch(result) {
   const bill = {
