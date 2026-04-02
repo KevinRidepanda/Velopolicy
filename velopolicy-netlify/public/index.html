@@ -1534,23 +1534,58 @@ async function doSearch() {
 
     setSbDot('sb-search', 'ok');
 
-    const textBlock = data.content && data.content.find(function(c) { return c.type === 'text'; });
-    let results = [];
-    if (textBlock) {
+    // Collect all text blocks (web search returns multiple content blocks)
+    var allText = '';
+    if (data.content && data.content.length) {
+      data.content.forEach(function(block) {
+        if (block.type === 'text') allText += block.text + '\n';
+      });
+    }
+
+    var results = [];
+
+    // Strategy 1: find a JSON array in the text
+    if (allText) {
       try {
-        const clean = textBlock.text.replace(/```json|```/g, '').trim();
-        const s = clean.indexOf('[');
-        const e = clean.lastIndexOf(']');
-        if (s >= 0 && e > s) results = JSON.parse(clean.slice(s, e + 1));
-      } catch (_) {}
+        var clean = allText.replace(/```json|```/g, '').trim();
+        var s = clean.indexOf('[');
+        var e = clean.lastIndexOf(']');
+        if (s >= 0 && e > s) {
+          results = JSON.parse(clean.slice(s, e + 1));
+        }
+      } catch (_) {
+        // Strategy 2: extract individual JSON objects
+        try {
+          var objMatches = allText.match(/\{[^{}]+\}/g) || [];
+          results = objMatches.map(function(m) {
+            try { return JSON.parse(m); } catch(_) { return null; }
+          }).filter(function(r) { return r && r.title; });
+        } catch (_) {}
+      }
+    }
+
+    // Strategy 3: if still no results but we have text, parse it as plain summaries
+    if (!results.length && allText.trim()) {
+      // Show formatted text response rather than raw fallback
+      var lines = allText.trim().split('\n').filter(function(l) { return l.trim(); });
+      if (lines.length > 0) {
+        if (sr) sr.innerHTML = '<div style="padding:16px">' +
+          '<div style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--text)">Search results:</div>' +
+          lines.map(function(l) {
+            return '<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;line-height:1.6;color:var(--text)">' + l + '</div>';
+          }).join('') +
+          '</div>';
+        if (lbl) lbl.textContent = 'Results for: ' + q;
+        return;
+      }
+      if (lbl) lbl.textContent = 'No results found for: ' + q;
+      if (sr) sr.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px">No results found. Try a different search term.</div>';
+      return;
     }
 
     if (!results.length) {
-      const fallback = data.content
-        ? data.content.filter(function(c) { return c.type === 'text'; }).map(function(c) { return c.text; }).join('\n')
-        : 'No results found.';
-      if (sr)  sr.innerHTML    = '<div style="padding:16px;font-size:13px;line-height:1.75">' + fallback.replace(/\n/g, '<br>') + '</div>';
-      if (lbl) lbl.textContent = 'Results for: ' + q;
+      if (lbl) lbl.textContent = 'No results found';
+      if (sr) sr.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px">No results found. Try a different search term.</div>';
       return;
     }
 
